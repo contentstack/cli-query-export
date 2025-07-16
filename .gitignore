@@ -12,3 +12,7 @@ coverage
 .vscode/
 /lib
 .env
+_backup_*
+contents/
+logs/
+oclif.manifest.json

@@ -8,16 +8,11 @@ const config: DefaultConfig = {
   modules: {
     // Always export - general modules
     general: ['stack', 'locales', 'environments'],
-
     // Query target modules
     queryable: ['content-types'],
-
-    // Conditionally export - dependent modules
     dependent: ['global-fields', 'extensions', 'taxonomies'],
-
     // Content modules
     content: ['entries', 'assets'],
-
     // Export order based on dependencies
     exportOrder: [
       'stack',
@@ -30,66 +25,18 @@ const config: DefaultConfig = {
       'entries',
       'assets',
     ],
-
-    // Module-specific configuration
-    stack: {
-      dirName: 'stack',
-      fileName: 'stack.json',
-    },
-
-    locales: {
-      dirName: 'locales',
-      fileName: 'locales.json',
-    },
-
-    environments: {
-      dirName: 'environments',
-      fileName: 'environments.json',
-    },
-
-    'content-types': {
-      dirName: 'content_types',
-      fileName: 'content_types.json',
-      limit: 100,
-    },
-
-    'global-fields': {
-      dirName: 'global_fields',
-      fileName: 'globalfields.json',
-    },
-
-    extensions: {
-      dirName: 'extensions',
-      fileName: 'extensions.json',
-    },
-
-    taxonomies: {
-      dirName: 'taxonomies',
-      fileName: 'taxonomies.json',
-      limit: 100,
-    },
-
-    entries: {
-      dirName: 'entries',
-      fileName: 'entries.json',
-      limit: 100,
-    },
-
-    assets: {
-      dirName: 'assets',
-      fileName: 'assets.json',
-      batchLimit: 20,
-    },
   },
-
   // Query-specific settings
   queryConfig: {
-    supportedModules: ['content-types'],
     maxRecursionDepth: 10,
     batchSize: 100,
     metadataFileName: '_query-meta.json',
+    validation: {
+      maxQueryDepth: 5,
+      maxArraySize: 1000,
+      allowedDateFormats: ['ISO8601', 'YYYY-MM-DD', 'MM/DD/YYYY'],
+    },
   },
-
   // API endpoints
   apis: {
     stacks: '/stacks/',
@@ -102,10 +49,10 @@ const config: DefaultConfig = {
     entries: '/entries/',
     assets: '/assets/',
   },
-
   // Performance settings
   fetchConcurrency: 5,
   writeConcurrency: 5,
+  // Optional settings
 };
 
 export default config;

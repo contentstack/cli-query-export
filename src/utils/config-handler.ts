@@ -1,40 +1,48 @@
-import { ExportQueryConfig } from '../types';
+import * as path from 'path';
+import { QueryExportConfig } from '../types';
 import { sanitizePath, pathValidator, configHandler, isAuthenticated } from '@contentstack/cli-utilities';
 import config from '../config';
+import { askAPIKey } from './common-helper';
 
-export async function setupExportConfig(flags: any): Promise<ExportQueryConfig> {
+export async function setupQueryExportConfig(flags: any): Promise<QueryExportConfig> {
   const exportDir = sanitizePath(flags['data-dir'] || pathValidator('export'));
 
-  const exportConfig: ExportQueryConfig = {
+  const exportQueryConfig: QueryExportConfig = {
     ...config,
     exportDir,
     stackApiKey: flags['stack-api-key'] || '',
     managementToken: flags.alias ? configHandler.get(`tokens.${flags.alias}`)?.token : undefined,
-    queryInput: flags.query,
+    query: flags.query,
     skipReferences: flags['skip-references'] || false,
     skipDependencies: flags['skip-dependencies'] || false,
     branchName: flags.branch,
     securedAssets: flags['secured-assets'] || false,
     isQueryBasedExport: true,
+    logsPath: exportDir,
+    dataPath: exportDir,
+    // Todo: accept the path of the config file from the user
+    externalConfigPath: path.join(__dirname, '../config/export-config.json'),
   };
 
   // Handle authentication
   if (flags.alias) {
-    const tokenData = configHandler.get(`tokens.${flags.alias}`);
-    if (!tokenData?.token) {
-      throw new Error(`No management token found for alias ${flags.alias}`);
+    const { token, apiKey } = configHandler.get(`tokens.${flags.alias}`) || {};
+    config.managementToken = token;
+    config.stackApiKey = apiKey;
+    if (!config.managementToken) {
+      throw new Error(`No management token found on given alias ${flags.alias}`);
     }
-    exportConfig.managementToken = tokenData.token;
-    exportConfig.stackApiKey = tokenData.apiKey || exportConfig.stackApiKey;
   }
 
-  if (!exportConfig.managementToken && !isAuthenticated()) {
-    throw new Error('Please login or provide an alias for the management token');
+  if (!config.managementToken) {
+    if (!isAuthenticated()) {
+      throw new Error('Please login or provide an alias for the management token');
+    } else {
+      config.stackApiKey = flags['stack-api-key'] || (await askAPIKey());
+      if (typeof config.stackApiKey !== 'string') {
+        throw new Error('Invalid API key received');
+      }
+    }
   }
-
-  if (!exportConfig.stackApiKey) {
-    throw new Error('Stack API key is required');
-  }
-
-  return exportConfig;
+  return exportQueryConfig;
 }

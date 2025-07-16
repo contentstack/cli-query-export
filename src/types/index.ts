@@ -1,5 +1,4 @@
 import { ContentstackClient } from '@contentstack/cli-utilities';
-import ExportConfig from './export-config';
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export interface AuthOptions {
@@ -84,14 +83,34 @@ export interface DependencyExtractor {
   targetModule: Modules;
 }
 
-export interface ExportQueryConfig {
+export interface ExportOptions {
+  query?: any;
+  alias?: string;
+  directory?: string;
+  branch?: string;
+  skipReferences?: boolean;
+  skipDependencies?: boolean;
+  securedAssets?: boolean;
+  includeGlobalFieldSchema?: boolean;
+  includePublishDetails?: boolean;
+  includeDimension?: boolean;
+  contentTypes?: string[];
+  uids?: string[];
+  configPath?: string;
+  fetchConcurrency?: number;
+  writeConcurrency?: number;
+  batchSize?: number;
+  [key: string]: any;
+}
+
+export interface DefaultConfig {
   // Basic settings
   contentVersion: number;
   host: string;
 
   // Export settings
-  exportDir: string;
-  stackApiKey: string;
+  exportDir?: string;
+  stackApiKey?: string;
   managementToken?: string;
   region?: Region;
   branchName?: string;
@@ -106,36 +125,30 @@ export interface ExportQueryConfig {
 
   // Module configuration
   modules: {
-    // Module capabilities
-    capabilities: {
-      general: Modules[];
-      queryable: Modules[];
-      dependent: Modules[];
-      content: Modules[];
-    };
-
+    general: Modules[];
+    queryable: Modules[];
+    dependent: Modules[];
+    content: Modules[];
     // Export order
     exportOrder: Modules[];
-
     // Module definitions
-    definitions: Record<Modules, ModuleDefinition>;
+    definitions?: Record<Modules, ModuleDefinition>;
   };
 
   // Query-specific settings
   queryConfig: {
-    maxRecursionDepth: number;
-    batchSize: number;
-    metadataFileName: string;
-    defaultOperators: string[];
+    maxRecursionDepth?: number;
+    batchSize?: number;
+    metadataFileName?: string;
     validation: {
-      maxQueryDepth: number;
-      maxArraySize: number;
-      allowedDateFormats: string[];
+      maxQueryDepth?: number;
+      maxArraySize?: number;
+      allowedDateFormats?: string[];
     };
   };
 
   // Dependency extraction rules
-  dependencyExtractors: Record<string, DependencyExtractor>;
+  dependencyExtractors?: Record<string, DependencyExtractor>;
 
   // Performance settings
   fetchConcurrency: number;
@@ -146,6 +159,30 @@ export interface ExportQueryConfig {
   branches?: Array<{ uid: string; source: string }>;
   branchEnabled?: boolean;
   branchDir?: string;
+  apis: {
+    stacks: string;
+    locales: string;
+    environments: string;
+    content_types: string;
+    global_fields: string;
+    extensions: string;
+    taxonomies: string;
+    entries: string;
+    assets: string;
+  };
+  externalConfigPath?: string;
+}
+
+export interface QueryExportConfig extends DefaultConfig {
+  query: string;
+  skipReferences: boolean;
+  skipDependencies: boolean;
+  stackApiKey: string;
+  managementToken?: string;
+  branchName: string;
+  securedAssets: boolean;
+  logsPath: string;
+  dataPath: string;
 }
 
 export interface QueryMetadata {
@@ -166,7 +203,3 @@ export interface QueryMetadata {
     totalModules: number;
   };
 }
-
-export { default as DefaultConfig } from './default-config';
-export { default as ExportConfig } from './export-config';
-export * from './marketplace-app';

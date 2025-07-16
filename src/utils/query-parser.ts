@@ -1,11 +1,11 @@
 import * as fs from 'fs';
 import { CLIError } from '@contentstack/cli-utilities';
-import { ExportQueryConfig } from '../types';
+import { QueryExportConfig } from '../types';
 
 export class QueryParser {
-  private config: ExportQueryConfig;
+  private config: QueryExportConfig;
 
-  constructor(config: ExportQueryConfig) {
+  constructor(config: QueryExportConfig) {
     this.config = config;
   }
 
@@ -55,81 +55,81 @@ export class QueryParser {
     }
 
     // Validate supported modules
-    const queryableModules = this.config.modules.capabilities.queryable;
+    const queryableModules = this.config.modules.queryable;
     for (const module of modules) {
       if (!queryableModules.includes(module as any)) {
         throw new CLIError(`Module "${module}" is not queryable. Supported modules: ${queryableModules.join(', ')}`);
       }
     }
 
-    // Validate query structure for each module
-    for (const [moduleName, moduleQuery] of Object.entries(query.modules)) {
-      this.validateModuleQuery(moduleName, moduleQuery);
-    }
+    // // Validate query structure for each module
+    // for (const [moduleName, moduleQuery] of Object.entries(query.modules)) {
+    //   this.validateModuleQuery(moduleName, moduleQuery);
+    // }
 
-    // Validate query depth
-    this.validateQueryDepth(query, 0);
+    // // Validate query depth
+    // this.validateQueryDepth(query, 0);
   }
 
-  private validateModuleQuery(moduleName: string, moduleQuery: any): void {
-    if (!moduleQuery || typeof moduleQuery !== 'object') {
-      throw new CLIError(`Query for module "${moduleName}" must be an object`);
-    }
+  // private validateModuleQuery(moduleName: string, moduleQuery: any): void {
+  //   if (!moduleQuery || typeof moduleQuery !== 'object') {
+  //     throw new CLIError(`Query for module "${moduleName}" must be an object`);
+  //   }
 
-    const moduleConfig = this.config.modules.definitions[moduleName as any];
-    if (moduleConfig?.queryConfig) {
-      this.validateQueryOperators(moduleQuery, moduleConfig.queryConfig.supportedOperators);
-      this.validateQueryFields(moduleQuery, moduleConfig.queryConfig.supportedFields, moduleName);
-    }
-  }
+  //   const moduleConfig = this.config.modules.definitions[moduleName as any];
+  //   if (moduleConfig?.queryConfig) {
+  //     this.validateQueryOperators(moduleQuery, moduleConfig.queryConfig.supportedOperators);
+  //     this.validateQueryFields(moduleQuery, moduleConfig.queryConfig.supportedFields, moduleName);
+  //   }
+  // }
 
-  private validateQueryOperators(queryObj: any, supportedOperators: string[]): void {
-    for (const [key, value] of Object.entries(queryObj)) {
-      if (key.startsWith('$')) {
-        if (!supportedOperators.includes(key)) {
-          throw new CLIError(`Invalid query operator: ${key}. Supported operators: ${supportedOperators.join(', ')}`);
-        }
-      }
+  // private validateQueryOperators(queryObj: any, supportedOperators: string[]): void {
+  //   for (const [key, value] of Object.entries(queryObj)) {
+  //     if (key.startsWith('$')) {
+  //       if (!supportedOperators.includes(key)) {
+  //         throw new CLIError(`Invalid query operator: ${key}. Supported operators: ${supportedOperators.join(', ')}`);
+  //       }
+  //     }
 
-      if (typeof value === 'object' && value !== null) {
-        this.validateQueryOperators(value, supportedOperators);
-      }
-    }
-  }
+  //     if (typeof value === 'object' && value !== null) {
+  //       this.validateQueryOperators(value, supportedOperators);
+  //     }
+  //   }
+  // }
 
-  private validateQueryFields(queryObj: any, supportedFields: string[], moduleName: string): void {
-    for (const [key, value] of Object.entries(queryObj)) {
-      if (!key.startsWith('$') && !supportedFields.includes(key)) {
-        throw new CLIError(
-          `Invalid query field "${key}" for module "${moduleName}". Supported fields: ${supportedFields.join(', ')}`,
-        );
-      }
+  // private validateQueryFields(queryObj: any, supportedFields: string[], moduleName: string): void {
+  //   for (const [key, value] of Object.entries(queryObj)) {
+  //     if (!key.startsWith('$') && !supportedFields.includes(key)) {
+  //       throw new CLIError(
+  //         `Invalid query field "${key}" for module "${moduleName}". Supported fields: ${supportedFields.join(', ')}`,
+  //       );
+  //     }
 
-      if (typeof value === 'object' && value !== null && !key.startsWith('$')) {
-        // Field-level operators are allowed
-        this.validateQueryOperators(value, this.config.queryConfig.defaultOperators);
-      }
-    }
-  }
+  //     if (typeof value === 'object' && value !== null && !key.startsWith('$')) {
+  //       // Field-level operators are allowed
+  //       this.validateQueryOperators(value, this.config.queryConfig.defaultOperators);
+  //     }
+  //   }
+  // }
 
-  private validateQueryDepth(obj: any, depth: number): void {
-    if (depth > this.config.queryConfig.validation.maxQueryDepth) {
-      throw new CLIError(
-        `Query depth exceeds maximum allowed depth of ${this.config.queryConfig.validation.maxQueryDepth}`,
-      );
-    }
+  // private validateQueryDepth(obj: any, depth: number): void {
+  //   if (depth > this.config.queryConfig.validation.maxQueryDepth) {
+  //     throw new CLIError(
+  //       `Query depth exceeds maximum allowed depth of ${this.config.queryConfig.validation.maxQueryDepth}`,
+  //     );
+  //   }
 
-    if (typeof obj === 'object' && obj !== null) {
-      for (const value of Object.values(obj)) {
-        if (typeof value === 'object') {
-          this.validateQueryDepth(value, depth + 1);
-        }
-        if (Array.isArray(value) && value.length > this.config.queryConfig.validation.maxArraySize) {
-          throw new CLIError(
-            `Array size exceeds maximum allowed size of ${this.config.queryConfig.validation.maxArraySize}`,
-          );
-        }
-      }
-    }
-  }
+  //   if (typeof obj === 'object' && obj !== null) {
+  //     for (const value of Object.values(obj)) {
+  //       if (typeof value === 'object') {
+  //         this.validateQueryDepth(value, depth + 1);
+  //       }
+  //       if (Array.isArray(value) && value.length > this.config.queryConfig.validation.maxArraySize) {
+  //         throw new CLIError(
+  //           `Array size exceeds maximum allowed size of ${this.config.queryConfig.validation.maxArraySize}`,
+  //         );
+  //       }
+  //     }
+  //   }
+  // }
 }
