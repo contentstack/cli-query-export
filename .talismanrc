@@ -1,16 +1,6 @@
 fileignoreconfig:
   - filename: package-lock.json
-    checksum: 9624b75c33cbe3ac509d00572be71df680a38eeb7f4886a05f05b8cfaaa4f423
-  - filename: src/utils/common-helper.ts
-    checksum: 055af8d062d335d7957580eb523f2b7e8f1242a79b01fbc249779eebb986f456
-  - filename: src/utils/config-handler.ts
-    checksum: 4854634178bc9b629399426915cfa3b7ccf00a4465ff2a17454b1b032501504f
-  - filename: src/types/index.ts
-    checksum: 884c46b4506d7ededec7485fe2d0173e60f9a2b99ab14894c9fc3b6dc9f92e69
-  - filename: src/utils/dependency-resolver.ts
-    checksum: effa9e1d9dd0775f8b6e081d093c7bfd2f318d06b459c763ec34610aee027fae
-  - filename: README.md
-    checksum: 9c1d4ac9e5035f4e069353f0432630607b95442b55f876c134d088d352ae6b7a
-  - filename: src/utils/query-parser.ts
-    checksum: cf60b64bcc06143e59aeed822983c1b4707d4c803fa10e9e86f5191ee76f521e
+    checksum: be7430361947c33858ab3a30eec33896023bfcc18704730265e88c61e1e690ad
+  - filename: .husky/pre-commit
+    checksum: 7a12030ddfea18d6f85edc25f1721fb2009df00fdd42bab66b05de25ab3e32b2
 version: '1.0'
