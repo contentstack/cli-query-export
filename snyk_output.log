@@ -1,8 +1,0 @@
-
- ERROR   Unspecified Error (SNYK-CLI-0000)
-                                                                                        
-           user does not have required permission on org                                
-
-Docs:    https://docs.snyk.io/scan-with-snyk/error-catalog#snyk-cli-0000 
-                                                                         
-ID:      urn:snyk:interaction:d3ff943d-fedc-4d3b-8494-b5d8edac40a2 
