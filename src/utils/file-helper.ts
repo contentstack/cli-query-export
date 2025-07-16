@@ -31,30 +31,6 @@ export const readFile = async (filePath: string, options = { type: 'json' }): Pr
   });
 };
 
-export const readLargeFile = function (filePath: string, options: { type?: string } = {}): Promise<any> {
-  if (typeof filePath !== 'string') {
-    return;
-  }
-  filePath = path.resolve(sanitizePath(filePath));
-  if (fs.existsSync(filePath)) {
-    return new Promise((resolve, reject) => {
-      const readStream = fs.createReadStream(filePath, { encoding: 'utf-8' });
-      const parseStream: any = bigJSON.createParseStream();
-      parseStream.on('data', function (data: unknown) {
-        if (options.type === 'array') {
-          return resolve(Object.values(data));
-        }
-        resolve(data);
-      });
-      parseStream.on('error', (error: Error) => {
-        console.log('error', error);
-        reject(error);
-      });
-      readStream.pipe(parseStream);
-    });
-  }
-};
-
 export const writeFileSync = function (filePath: string, data: any): void {
   data = typeof data === 'object' ? JSON.stringify(data) : data || '{}';
   fs.writeFileSync(filePath, data);

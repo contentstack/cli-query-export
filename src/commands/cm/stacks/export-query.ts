@@ -8,14 +8,15 @@ import {
   FlagInput,
   pathValidator,
   sanitizePath,
+  formatError,
 } from '@contentstack/cli-utilities';
-import { QueryRunner } from '../../../core/query-runner';
-import { ExportQueryConfig } from '../../../types';
-import { setupExportConfig } from '../../../utils/config-handler';
-import { log, formatError } from '../../../utils/logger';
+import { QueryExporter } from '../../../core/query-executor';
+import { QueryExportConfig } from '../../../types';
+import { log, setupQueryExportConfig } from '../../../utils';
 
 export default class ExportQueryCommand extends Command {
   static description = 'Export content from a stack using query-based filtering';
+  private exportDir: string;
 
   static examples = [
     'csdx cm:stacks:export-query --query \'{"modules":{"content-types":{"title":{"$in":["Blog","Author"]}}}}\'',
@@ -68,33 +69,31 @@ export default class ExportQueryCommand extends Command {
   static aliases = ['cm:export-query'];
 
   async run(): Promise<void> {
-    let exportDir = pathValidator('logs');
-
     try {
       const { flags } = await this.parse(ExportQueryCommand);
 
       // Setup export configuration
-      const exportConfig = await setupExportConfig(flags);
-      exportConfig.host = this.cmaHost;
-      exportConfig.region = this.region;
+      const exportQueryConfig = await setupQueryExportConfig(flags);
+      exportQueryConfig.host = this.cmaHost;
+      exportQueryConfig.region = this.region;
 
       if (this.developerHubUrl) {
-        exportConfig.developerHubBaseUrl = this.developerHubUrl;
+        exportQueryConfig.developerHubBaseUrl = this.developerHubUrl;
       }
 
-      exportDir = sanitizePath(exportConfig.exportDir);
+      this.exportDir = sanitizePath(exportQueryConfig.exportDir);
 
       // Initialize management API client
-      const managementAPIClient: ContentstackClient = await managementSDKClient(exportConfig);
+      const managementAPIClient: ContentstackClient = await managementSDKClient(exportQueryConfig);
 
       // Initialize and run query export
-      const queryRunner = new QueryRunner(managementAPIClient, exportConfig);
-      await queryRunner.execute();
+      const queryExporter = new QueryExporter(managementAPIClient, exportQueryConfig);
+      await queryExporter.execute();
 
-      log(exportConfig, 'Query-based export completed successfully!', 'success');
-      log(exportConfig, `Export files saved to: ${exportDir}`, 'info');
+      log(exportQueryConfig, 'Query-based export completed successfully!', 'success');
+      log(exportQueryConfig, `Export files saved to: ${this.exportDir}`, 'info');
     } catch (error) {
-      log({ exportDir } as ExportQueryConfig, `Export failed: ${formatError(error)}`, 'error');
+      log({ exportDir: this.exportDir } as QueryExportConfig, `Export failed: ${formatError(error)}`, 'error');
       throw error;
     }
   }
