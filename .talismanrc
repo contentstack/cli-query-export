@@ -1,28 +1,16 @@
 fileignoreconfig:
-  - filename: .eslintrc
-    checksum: d11aa7173fffaa6f733cc314a312838906cff6afab97f42e8e6d93bf4a5a76e5
-  - filename: oclif.manifest.json
-    checksum: 70d6a81db033dc698972acd75ac953b009197b3bdf12d9ed5ec05bea87b79d7c
-  - filename: test/config.json
-    checksum: c873d014bed32db9095aed58f806e30c83f5e86e58f295ce81ee5cab64e30fcb
-  - filename: README copy.md
-    checksum: c96aa532137679b3f9f1029813e762d7f3375481ee4a3c7219297eacb0db3735
-  - filename: src/utils/asset-utils.ts
-    checksum: 048c4d2d454babf5f46e81be1055115d5ef190ea070d545804c62204ce9e3c64
+  - filename: package-lock.json
+    checksum: 9624b75c33cbe3ac509d00572be71df680a38eeb7f4886a05f05b8cfaaa4f423
+  - filename: src/utils/common-helper.ts
+    checksum: 055af8d062d335d7957580eb523f2b7e8f1242a79b01fbc249779eebb986f456
   - filename: src/utils/config-handler.ts
-    checksum: 55a6133788c592b656a0c62c49e1f19c03892e20e40e22e4dc3f8ab16c4f34d6
-  - filename: src/core/query-runner.ts
-    checksum: 6e48aaddde5206524af969dac9e74feeff98f4da2be48c28e13db357cd57e8bf
-  - filename: src/utils/query-resolver.ts
-    checksum: 14fa2da02fba66c17f67b95474068983dddb59d930ace576575c9e405a0e5363
-  - filename: src/commands/cm/stacks/export-query.ts
-    checksum: 6e34002e1bd35c75716b6e7400cfeec89e85d6e85178a4ac53b6e8b76157e60e
-  - filename: src/utils/export-config-handler.ts
-    checksum: e74a83578eda7264c0422f8ee63aaf46598a0c4cda4b5f1a92ef549b64483cd7
-  - filename: src/utils/query-handler.ts
-    checksum: 9ecaa236d0c24704ecc65687a6f532aa6fba3d1be30e52c35d2fc29de6612e77
+    checksum: 4854634178bc9b629399426915cfa3b7ccf00a4465ff2a17454b1b032501504f
+  - filename: src/types/index.ts
+    checksum: 884c46b4506d7ededec7485fe2d0173e60f9a2b99ab14894c9fc3b6dc9f92e69
+  - filename: src/utils/dependency-resolver.ts
+    checksum: effa9e1d9dd0775f8b6e081d093c7bfd2f318d06b459c763ec34610aee027fae
+  - filename: README.md
+    checksum: 9c1d4ac9e5035f4e069353f0432630607b95442b55f876c134d088d352ae6b7a
   - filename: src/utils/query-parser.ts
-    checksum: ce26f57850556f9c68706dbf3c9d5a642af10a8bc914dda279c5db31e662e17e
-  - filename: .github/workflows/secrets-scan.yml
-    checksum: d79ec3f3288964f7d117b9ad319a54c0ebc152e35f69be8fde95522034fdfb2a
+    checksum: cf60b64bcc06143e59aeed822983c1b4707d4c803fa10e9e86f5191ee76f521e
 version: '1.0'
