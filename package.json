@@ -5,7 +5,7 @@
   "author": "Contentstack",
   "bugs": "https://github.com/contentstack/cli/issues",
   "dependencies": {
-    "@contentstack/cli-cm-export": "file:/Users/shafeeq.pp/WORKSPACE/CLI/cli-org/cli-10/cli/packages/contentstack-export/contentstack-cli-cm-export-1.18.0.tgz",
+    "@contentstack/cli-cm-export": "~1.18.0",
     "@contentstack/cli-command": "~1.5.0",
     "@contentstack/cli-utilities": "~1.12.0",
     "@oclif/core": "^4.3.0",
@@ -56,8 +56,6 @@
     "test": "nyc --extension .ts mocha --forbid-only \"test/**/*.test.ts\"",
     "lint": "eslint src/**/*.ts",
     "format": "eslint src/**/*.ts --fix",
-    "test:integration": "INTEGRATION_TEST=true mocha --config ./test/.mocharc.js --forbid-only \"test/run.test.js\"",
-    "test:integration:report": "INTEGRATION_TEST=true nyc --extension .js mocha --forbid-only \"test/run.test.js\"",
     "test:unit": "mocha --forbid-only \"test/unit/**/*.test.ts\"",
     "prepare": "npx husky && chmod +x .husky/pre-commit"
   },
