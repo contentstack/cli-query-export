@@ -2,9 +2,11 @@
   "extends": "../tsconfig",
   "compilerOptions": {
     "noEmit": true,
-    "resolveJsonModule": true
-  },
-  "references": [
-    {"path": "../"}
-  ]
+    "resolveJsonModule": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "target": "es2019",
+    "skipLibCheck": true,
+    "strict": false
+  }
 }

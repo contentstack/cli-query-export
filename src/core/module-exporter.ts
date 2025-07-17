@@ -24,6 +24,10 @@ export class ModuleExporter {
 
       log(this.exportQueryConfig, `Running export command: ${cmd.join(' ')}`, 'debug');
 
+      // Configurable delay
+      const delay = this.exportQueryConfig.exportDelayMs || 2000;
+      await new Promise((resolve) => setTimeout(resolve, delay));
+
       // Create export command instance
       await ExportCommand.run(cmd);
 
