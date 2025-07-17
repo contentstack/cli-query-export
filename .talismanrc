@@ -1,6 +1,20 @@
 fileignoreconfig:
-  - filename: snyk_output.log
-    checksum: dfa9dc093345f006cc3fb107b8495fcbe79c524db51f44c08d959c656bedf2f7
-  - filename: talisman_output.log
-    checksum: 50a8928e551f9092dafcf50f531c926ac00e2846c564aafaaab70c1ecaa19490
+  - filename: package-lock.json
+    checksum: e51e2ec7698f3c6b2d89b368e00b2d52e49efb52361a0da3b8e13fd3bbc49ad8
+  - filename: test/unit/utils/common-helper.test.ts
+    checksum: 429885d64e75a276f72dd41c279c10c63f49d4e0e2106c36c465098568bcff29
+  - filename: test/unit/utils/query-parser-simple.test.ts
+    checksum: 729b55aee1b850864d137329aea0c1a2f451f1ceabb6f8c799b27ed39b0d860a
+  - filename: test/unit/utils/content-type-helper.test.ts
+    checksum: e7a5862e2a8de8d15d66c6c0c5078534c3bcca290f6b7d45a1e394bd0c71a1e8
+  - filename: test/unit/utils/config-handler.test.ts
+    checksum: a3d8a4e30a6ee8e05fe556dd614185588f2fe24e6f204f4a26bcb39adff21b1b
+  - filename: test/unit/utils/referenced-asset-handler.test.ts
+    checksum: f390a647df28f01c19d20720f8be7f6b25f03b47e9bdfa25ca610e56c15f8efa
+  - filename: test/unit/query-executor.test.ts
+    checksum: ce4e79d712e40e663804da3edc71f5a49504673976433952a636356e244e1d6b
+  - filename: test/unit/utils/dependency-resolver.test.ts
+    checksum: d4fe3507204ca8abbe8267c4de05473b58d88ffaf7e7a8fa4fd94a2b5827d0c6
+  - filename: test/unit/module-exporter.test.ts
+    checksum: 197314b2fb461004fe9f455e2e883a398853aa00f2a92054cb76b32cd1855bc7
 version: '1.0'

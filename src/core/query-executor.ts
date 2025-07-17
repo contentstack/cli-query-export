@@ -1,4 +1,4 @@
-import { ContentstackClient, sanitizePath } from '@contentstack/cli-utilities';
+import { sanitizePath } from '@contentstack/cli-utilities';
 import * as path from 'path';
 import { QueryExportConfig, Modules } from '../types';
 import { QueryParser } from '../utils/query-parser';
@@ -10,18 +10,16 @@ import { ContentTypeDependenciesHandler } from '../utils';
 import { AssetReferenceHandler } from '../utils';
 
 export class QueryExporter {
-  private stackAPIClient: ReturnType<ContentstackClient['stack']>;
   private exportQueryConfig: QueryExportConfig;
   private queryParser: QueryParser;
   private moduleExporter: ModuleExporter;
 
-  constructor(managementAPIClient: ContentstackClient, exportQueryConfig: QueryExportConfig) {
+  constructor(exportQueryConfig: QueryExportConfig) {
     this.exportQueryConfig = exportQueryConfig;
 
     // Initialize components
     this.queryParser = new QueryParser(this.exportQueryConfig);
     this.moduleExporter = new ModuleExporter(this.stackAPIClient, exportQueryConfig);
-    // this.assetUtils = new AssetUtils(this.exportQueryConfig);
   }
 
   async execute(): Promise<void> {
@@ -89,8 +87,11 @@ export class QueryExporter {
 
       log(this.exportQueryConfig, `Starting with ${currentBatch.length} initial content types`, 'info');
 
+      // track reference depth
+      let iterationCount = 0;
       // Step 3: Process batches until no new references are found
-      while (currentBatch.length > 0) {
+      while (currentBatch.length > 0 && iterationCount < this.exportQueryConfig.maxCTReferenceDepth) {
+        iterationCount++;
         currentBatch.forEach((ct: any) => exportedContentTypeUIDs.add(ct.uid));
         // Extract referenced content types from current batch
         const referencedUIDs = await referencedHandler.extractReferencedContentTypes(currentBatch);
