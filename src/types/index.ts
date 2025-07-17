@@ -183,6 +183,7 @@ export interface QueryExportConfig extends DefaultConfig {
   securedAssets: boolean;
   logsPath: string;
   dataPath: string;
+  exportDelayMs?: number;
 }
 
 export interface QueryMetadata {

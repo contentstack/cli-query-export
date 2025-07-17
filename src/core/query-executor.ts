@@ -211,8 +211,9 @@ export class QueryExporter {
       await this.exportEntries();
 
       // Step 2: Export referenced assets from entries
-      // add a delay of 10 seconds
-      await new Promise((resolve) => setTimeout(resolve, 10000));
+      // add a delay of 5 seconds
+      const delay = (this.exportQueryConfig as any).exportDelayMs || 2000;
+      await new Promise((resolve) => setTimeout(resolve, delay));
       await this.exportReferencedAssets();
 
       log(this.exportQueryConfig, 'Content modules export completed successfully', 'success');
