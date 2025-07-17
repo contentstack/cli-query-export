@@ -171,6 +171,7 @@ export interface DefaultConfig {
     assets: string;
   };
   externalConfigPath?: string;
+  maxCTReferenceDepth: number;
 }
 
 export interface QueryExportConfig extends DefaultConfig {

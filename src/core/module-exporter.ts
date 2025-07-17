@@ -1,4 +1,4 @@
-import { ContentstackClient, formatError } from '@contentstack/cli-utilities';
+import { formatError } from '@contentstack/cli-utilities';
 import ExportCommand from '@contentstack/cli-cm-export';
 import { QueryExportConfig, Modules, ExportOptions } from '../types';
 import { log } from '../utils/logger';
@@ -6,12 +6,10 @@ import config from '../config';
 import * as path from 'path';
 
 export class ModuleExporter {
-  private stackAPIClient: ReturnType<ContentstackClient['stack']>;
   private exportQueryConfig: QueryExportConfig;
   private exportedModules: string[] = [];
 
-  constructor(stackAPIClient: ReturnType<ContentstackClient['stack']>, exportQueryConfig: QueryExportConfig) {
-    this.stackAPIClient = stackAPIClient;
+  constructor(exportQueryConfig: QueryExportConfig) {
     this.exportQueryConfig = exportQueryConfig;
   }
 
