@@ -1,6 +1,5 @@
 import * as path from 'path';
 import { QueryExportConfig } from '../types';
-import { readFile } from './file-helper';
 import { log } from './logger';
 
 export class ReferencedContentTypesHandler {

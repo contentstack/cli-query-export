@@ -10,7 +10,7 @@ const config: DefaultConfig = {
     general: ['stack', 'locales', 'environments'],
     // Query target modules
     queryable: ['content-types'],
-    dependent: ['global-fields', 'extensions', 'taxonomies'],
+    dependent: ['global-fields', 'extensions', 'marketplace-apps', 'taxonomies', 'personalize'],
     // Content modules
     content: ['entries', 'assets'],
     // Export order based on dependencies
