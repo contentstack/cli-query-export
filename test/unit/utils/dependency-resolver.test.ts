@@ -1,13 +1,27 @@
 import { expect } from 'chai';
+import * as sinon from 'sinon';
 import { ContentTypeDependenciesHandler } from '../../../src/utils/dependency-resolver';
 import { QueryExportConfig } from '../../../src/types';
 
 describe('Dependency Resolver Utilities', () => {
   let handler: ContentTypeDependenciesHandler;
   let mockConfig: QueryExportConfig;
+  let mockStackAPIClient: any;
 
   beforeEach(() => {
+    // Create a mock stack API client
+    mockStackAPIClient = {
+      extension: sinon.stub().returns({
+        query: sinon.stub().returns({
+          find: sinon.stub().resolves({
+            items: [],
+          }),
+        }),
+      }),
+    };
+
     mockConfig = {
+      maxCTReferenceDepth: 20,
       contentVersion: 2,
       host: 'https://api.contentstack.io/v3',
       exportDir: '/test/export',
@@ -53,7 +67,8 @@ describe('Dependency Resolver Utilities', () => {
       },
     };
 
-    handler = new ContentTypeDependenciesHandler(mockConfig);
+    // Fix: Pass both required arguments to the constructor
+    handler = new ContentTypeDependenciesHandler(mockStackAPIClient, mockConfig);
   });
 
   describe('Schema dependency extraction logic', () => {

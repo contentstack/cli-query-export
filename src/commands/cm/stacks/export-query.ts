@@ -1,5 +1,12 @@
 import { Command } from '@contentstack/cli-command';
-import { flags, FlagInput, sanitizePath, formatError } from '@contentstack/cli-utilities';
+import {
+  flags,
+  FlagInput,
+  sanitizePath,
+  formatError,
+  managementSDKClient,
+  ContentstackClient,
+} from '@contentstack/cli-utilities';
 import { QueryExporter } from '../../../core/query-executor';
 import { QueryExportConfig } from '../../../types';
 import { log, setupQueryExportConfig } from '../../../utils';
@@ -73,7 +80,8 @@ export default class ExportQueryCommand extends Command {
 
       this.exportDir = sanitizePath(exportQueryConfig.exportDir);
       // Initialize and run query export
-      const queryExporter = new QueryExporter(exportQueryConfig);
+      const managementAPIClient: ContentstackClient = await managementSDKClient(exportQueryConfig);
+      const queryExporter = new QueryExporter(managementAPIClient, exportQueryConfig);
       await queryExporter.execute();
 
       log(exportQueryConfig, 'Query-based export completed successfully!', 'success');

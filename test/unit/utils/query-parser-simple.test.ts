@@ -9,6 +9,7 @@ describe('Query Parser Simple Tests', () => {
 
   beforeEach(() => {
     mockConfig = {
+      maxCTReferenceDepth: 20,
       contentVersion: 2,
       host: 'https://api.contentstack.io/v3',
       exportDir: '/test/export',

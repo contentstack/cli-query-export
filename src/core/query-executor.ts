@@ -1,4 +1,4 @@
-import { sanitizePath } from '@contentstack/cli-utilities';
+import { ContentstackClient, sanitizePath } from '@contentstack/cli-utilities';
 import * as path from 'path';
 import { QueryExportConfig, Modules } from '../types';
 import { QueryParser } from '../utils/query-parser';
@@ -10,11 +10,12 @@ import { ContentTypeDependenciesHandler } from '../utils';
 import { AssetReferenceHandler } from '../utils';
 
 export class QueryExporter {
+  private stackAPIClient: ReturnType<ContentstackClient['stack']>;
   private exportQueryConfig: QueryExportConfig;
   private queryParser: QueryParser;
   private moduleExporter: ModuleExporter;
 
-  constructor(exportQueryConfig: QueryExportConfig) {
+  constructor(managementAPIClient: ContentstackClient, exportQueryConfig: QueryExportConfig) {
     this.exportQueryConfig = exportQueryConfig;
 
     this.stackAPIClient = managementAPIClient.stack({
@@ -23,7 +24,7 @@ export class QueryExporter {
     });
     // Initialize components
     this.queryParser = new QueryParser(this.exportQueryConfig);
-    this.moduleExporter = new ModuleExporter(this.stackAPIClient, exportQueryConfig);
+    this.moduleExporter = new ModuleExporter(exportQueryConfig);
   }
 
   async execute(): Promise<void> {

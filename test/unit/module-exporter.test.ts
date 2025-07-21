@@ -33,7 +33,7 @@ describe('ModuleExporter', () => {
     // Stub logger to prevent console output during tests
     sandbox.stub(logger, 'log');
 
-    moduleExporter = new ModuleExporter(mockStackAPIClient, mockConfig);
+    moduleExporter = new ModuleExporter(mockConfig);
   });
 
   afterEach(() => {
@@ -43,7 +43,6 @@ describe('ModuleExporter', () => {
   describe('constructor', () => {
     it('should initialize ModuleExporter with correct configuration', () => {
       expect(moduleExporter).to.be.an('object');
-      expect((moduleExporter as any).stackAPIClient).to.equal(mockStackAPIClient);
       expect((moduleExporter as any).exportQueryConfig).to.equal(mockConfig);
       expect((moduleExporter as any).exportedModules).to.be.an('array').that.is.empty;
     });
@@ -92,7 +91,7 @@ describe('ModuleExporter', () => {
 
     it('should include secured assets flag when enabled in config', () => {
       mockConfig.securedAssets = true;
-      moduleExporter = new ModuleExporter(mockStackAPIClient, mockConfig);
+      moduleExporter = new ModuleExporter(mockConfig);
 
       const cmd = (moduleExporter as any).buildExportCommand('assets', {});
 
@@ -142,7 +141,7 @@ describe('ModuleExporter', () => {
       mockConfig.branchName = undefined;
       mockConfig.externalConfigPath = undefined;
       mockConfig.managementToken = undefined;
-      moduleExporter = new ModuleExporter(mockStackAPIClient, mockConfig);
+      moduleExporter = new ModuleExporter(mockConfig);
 
       const cmd = (moduleExporter as any).buildExportCommand('entries', {});
 
@@ -385,7 +384,7 @@ describe('ModuleExporter', () => {
       };
 
       // Should not throw error during construction
-      const malformedExporter = new ModuleExporter(mockStackAPIClient, malformedConfig as any);
+      const malformedExporter = new ModuleExporter(malformedConfig as any);
       expect(malformedExporter).to.be.an('object');
 
       // Command building should handle null/undefined values
@@ -394,7 +393,7 @@ describe('ModuleExporter', () => {
     });
 
     it('should handle missing stack API client gracefully', () => {
-      const exporterWithNullClient = new ModuleExporter(null as any, mockConfig);
+      const exporterWithNullClient = new ModuleExporter(mockConfig);
       expect(exporterWithNullClient).to.be.an('object');
     });
   });
