@@ -17,6 +17,10 @@ export class QueryExporter {
   constructor(exportQueryConfig: QueryExportConfig) {
     this.exportQueryConfig = exportQueryConfig;
 
+    this.stackAPIClient = managementAPIClient.stack({
+      api_key: exportQueryConfig.stackApiKey,
+      management_token: exportQueryConfig.managementToken,
+    });
     // Initialize components
     this.queryParser = new QueryParser(this.exportQueryConfig);
     this.moduleExporter = new ModuleExporter(this.stackAPIClient, exportQueryConfig);
@@ -147,10 +151,10 @@ export class QueryExporter {
     log(this.exportQueryConfig, 'Starting export of dependent modules...', 'info');
 
     try {
-      const dependenciesHandler = new ContentTypeDependenciesHandler(this.exportQueryConfig);
+      const dependenciesHandler = new ContentTypeDependenciesHandler(this.stackAPIClient, this.exportQueryConfig);
 
       // Extract dependencies from all exported content types
-      const dependencies = dependenciesHandler.extractDependencies();
+      const dependencies = await dependenciesHandler.extractDependencies();
 
       // Export Global Fields
       if (dependencies.globalFields.size > 0) {
@@ -182,6 +186,20 @@ export class QueryExporter {
         await this.moduleExporter.exportModule('extensions', { query });
       }
 
+      // export marketplace apps
+      if (dependencies.marketplaceApps.size > 0) {
+        const marketplaceAppInstallationUIDs = Array.from(dependencies.marketplaceApps);
+        log(this.exportQueryConfig, `Exporting ${marketplaceAppInstallationUIDs.length} marketplace apps...`, 'info');
+        const query = {
+          modules: {
+            'marketplace-apps': {
+              installation_uid: { $in: marketplaceAppInstallationUIDs },
+            },
+          },
+        };
+        await this.moduleExporter.exportModule('marketplace-apps', { query });
+      }
+
       // Export Taxonomies
       if (dependencies.taxonomies.size > 0) {
         const taxonomyUIDs = Array.from(dependencies.taxonomies);
@@ -196,6 +214,9 @@ export class QueryExporter {
         };
         await this.moduleExporter.exportModule('taxonomies', { query });
       }
+
+      // export personalize
+      await this.moduleExporter.exportModule('personalize');
 
       log(this.exportQueryConfig, 'Dependent modules export completed successfully', 'success');
     } catch (error) {
@@ -212,8 +233,9 @@ export class QueryExporter {
       await this.exportEntries();
 
       // Step 2: Export referenced assets from entries
-      // add a delay of 10 seconds
-      await new Promise((resolve) => setTimeout(resolve, 10000));
+      // add a delay of 5 seconds
+      const delay = (this.exportQueryConfig as any).exportDelayMs || 5000;
+      await new Promise((resolve) => setTimeout(resolve, delay));
       await this.exportReferencedAssets();
 
       log(this.exportQueryConfig, 'Content modules export completed successfully', 'success');
