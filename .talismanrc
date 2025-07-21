@@ -3,8 +3,4 @@ fileignoreconfig:
     checksum: dfa9dc093345f006cc3fb107b8495fcbe79c524db51f44c08d959c656bedf2f7
   - filename: talisman_output.log
     checksum: 50a8928e551f9092dafcf50f531c926ac00e2846c564aafaaab70c1ecaa19490
-  - filename: package-lock.json
-    checksum: c59872edfab348a62dd25e760951ac86263db87366134a3f28d4cdd8b49002e7
-  - filename: src/core/query-executor.ts
-    checksum: ef5667bf619a0ee7624ec86d40601609a0c162f8c813a320b19bea663f5c4ded
 version: '1.0'

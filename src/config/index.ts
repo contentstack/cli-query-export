@@ -52,6 +52,7 @@ const config: DefaultConfig = {
   // Performance settings
   fetchConcurrency: 5,
   writeConcurrency: 5,
+  maxCTReferenceDepth: 20,
   // Optional settings
 };
 
