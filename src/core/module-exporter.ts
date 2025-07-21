@@ -91,39 +91,4 @@ export class ModuleExporter {
 
     return cmd;
   }
-
-  /**
-   * Read exported data from the file system
-   */
-  private async readExportedData(moduleName: Modules, options: ExportOptions): Promise<any[]> {
-    try {
-      const moduleConfig = config.modules.definitions[moduleName];
-      const directory = options.directory || this.exportQueryConfig.exportDir;
-      const filePath = path.join(directory, moduleConfig.dirName, moduleConfig.fileName);
-
-      const fs = require('fs');
-      if (fs.existsSync(filePath)) {
-        const rawData = fs.readFileSync(filePath, 'utf8');
-        const data = JSON.parse(rawData);
-
-        // Handle different data structures
-        if (Array.isArray(data)) {
-          return data;
-        } else if (data.items && Array.isArray(data.items)) {
-          return data.items;
-        } else if (typeof data === 'object') {
-          return [data];
-        }
-      }
-
-      return [];
-    } catch (error) {
-      log(this.exportQueryConfig, `Failed to read exported data for ${moduleName}: ${error.message}`, 'warn');
-      return [];
-    }
-  }
-
-  getExportedModules(): string[] {
-    return [...this.exportedModules];
-  }
 }
