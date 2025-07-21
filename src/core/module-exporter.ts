@@ -36,13 +36,6 @@ export class ModuleExporter {
         this.exportedModules.push(moduleName);
       }
 
-      // log(
-      //   this.exportQueryConfig,
-      //   `Successfully exported ${Array.isArray(data) ? data.length : 1} ${moduleName}`,
-      //   'success',
-      // );
-      // return Array.isArray(data) ? data : [data];
-
       // success message
       log(this.exportQueryConfig, `Successfully exported ${moduleName}`, 'success');
     } catch (error) {
@@ -70,8 +63,6 @@ export class ModuleExporter {
     // Alias (management token)
     if (options.alias) {
       cmd.push('-a', options.alias);
-    } else if (this.exportQueryConfig.managementToken) {
-      cmd.push('-A', this.exportQueryConfig.managementToken);
     }
 
     // Branch
