@@ -16,3 +16,4 @@ _backup_*
 contents/
 logs/
 oclif.manifest.json
+talisman_output.log
