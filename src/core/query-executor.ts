@@ -83,8 +83,18 @@ export class QueryExporter {
       const exportedContentTypeUIDs: Set<string> = new Set();
 
       // Step 1: Read initial content types and mark them as exported
-      const contentTypesFilePath = path.join(this.exportQueryConfig.exportDir, 'content_types', 'schema.json');
-      const contentTypes: any = fsUtil.readFile(sanitizePath(contentTypesFilePath));
+      const contentTypesFilePath = path.join(
+        this.exportQueryConfig.exportDir,
+        this.exportQueryConfig.branchName || '',
+        'content_types',
+        'schema.json',
+      );
+      const contentTypes: any = fsUtil.readFile(sanitizePath(contentTypesFilePath)) || [];
+      if (contentTypes.length === 0) {
+        log(this.exportQueryConfig, 'No content types found, skipping referenced content types export', 'info');
+        return;
+      }
+
       // contentTypes.forEach((ct: any) => exportedContentTypeUIDs.add(ct.uid));
 
       // Step 2: Start with initial batch (all currently exported content types)
