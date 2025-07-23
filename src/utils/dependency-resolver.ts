@@ -19,8 +19,22 @@ export class ContentTypeDependenciesHandler {
     taxonomies: Set<string>;
     marketplaceApps: Set<string>;
   }> {
-    const contentTypesFilePath = path.join(this.exportQueryConfig.exportDir, 'content_types', 'schema.json');
-    const allContentTypes = fsUtil.readFile(sanitizePath(contentTypesFilePath)) as any[];
+    const contentTypesFilePath = path.join(
+      this.exportQueryConfig.exportDir,
+      this.exportQueryConfig.branchName || '',
+      'content_types',
+      'schema.json',
+    );
+    const allContentTypes = (fsUtil.readFile(sanitizePath(contentTypesFilePath)) as any[]) || [];
+    if (allContentTypes.length === 0) {
+      log(this.exportQueryConfig, 'No content types found, skipping dependency extraction', 'info');
+      return {
+        globalFields: new Set<string>(),
+        extensions: new Set<string>(),
+        taxonomies: new Set<string>(),
+        marketplaceApps: new Set<string>(),
+      };
+    }
 
     log(this.exportQueryConfig, `Extracting dependencies from ${allContentTypes.length} content types`, 'info');
 

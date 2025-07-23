@@ -4,11 +4,9 @@ import { log } from './logger';
 
 export class ReferencedContentTypesHandler {
   private exportQueryConfig: QueryExportConfig;
-  private contentTypesDir: string;
 
   constructor(exportQueryConfig: QueryExportConfig) {
     this.exportQueryConfig = exportQueryConfig;
-    this.contentTypesDir = path.join(exportQueryConfig.exportDir, 'content-types');
   }
 
   /**
