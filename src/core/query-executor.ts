@@ -95,8 +95,6 @@ export class QueryExporter {
         return;
       }
 
-      // contentTypes.forEach((ct: any) => exportedContentTypeUIDs.add(ct.uid));
-
       // Step 2: Start with initial batch (all currently exported content types)
       let currentBatch = [...contentTypes];
 
