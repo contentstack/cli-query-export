@@ -11,7 +11,7 @@ export class AssetReferenceHandler {
 
   constructor(exportQueryConfig: QueryExportConfig) {
     this.exportQueryConfig = exportQueryConfig;
-    this.entriesDir = path.join(exportQueryConfig.exportDir, 'entries');
+    this.entriesDir = path.join(exportQueryConfig.exportDir, exportQueryConfig.branchName || '', 'entries');
   }
 
   /**
