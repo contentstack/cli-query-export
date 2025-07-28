@@ -20,8 +20,8 @@ export class ContentTypeDependenciesHandler {
     marketplaceApps: Set<string>;
   }> {
     const contentTypesFilePath = path.join(
-      this.exportQueryConfig.exportDir,
-      this.exportQueryConfig.branchName || '',
+      sanitizePath(this.exportQueryConfig.exportDir),
+      sanitizePath(this.exportQueryConfig.branchName || ''),
       'content_types',
       'schema.json',
     );
