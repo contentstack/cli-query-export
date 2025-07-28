@@ -1,8 +1,4 @@
 fileignoreconfig:
-  - filename: snyk_output.log
-    checksum: dfa9dc093345f006cc3fb107b8495fcbe79c524db51f44c08d959c656bedf2f7
-  - filename: talisman_output.log
-    checksum: d18cb2591eb650ebb3a2d5eb84f57c8f0891cef1987b2a420ab7e29dbe2782a0
   - filename: package-lock.json
-    checksum: 803054eadb6cf0cb4362a175b268ae2d8cbdb2ffc5cbf978d944b4db04a4a562
+    checksum: 4e00357992422982d516ee3231f87a1f98f27c12788c63a6a089cafa059b6b9e
 version: '1.0'
