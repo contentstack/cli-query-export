@@ -1,7 +1,7 @@
 import { expect } from 'chai';
 import { CLIError } from '@contentstack/cli-utilities';
-import { QueryParser } from '../../../src/utils/query-parser';
-import { QueryExportConfig } from '../../../src/types';
+import { QueryParser } from '../../src/utils/query-parser';
+import { QueryExportConfig } from '../../src/types';
 
 describe('Query Parser Simple Tests', () => {
   let queryParser: QueryParser;

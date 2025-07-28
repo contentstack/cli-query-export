@@ -1,9 +1,9 @@
 import { expect } from 'chai';
 import { stub, restore, SinonStub } from 'sinon';
 import * as path from 'path';
-import { ReferencedContentTypesHandler } from '../../../src/utils/content-type-helper';
-import * as logger from '../../../src/utils/logger';
-import { QueryExportConfig } from '../../../src/types';
+import { ReferencedContentTypesHandler } from '../../src/utils/content-type-helper';
+import * as logger from '../../src/utils/logger';
+import { QueryExportConfig } from '../../src/types';
 
 describe('Content Type Helper Utilities', () => {
   let handler: ReferencedContentTypesHandler;
