@@ -63,8 +63,6 @@ export default class ExportQueryCommand extends Command {
     }),
   };
 
-  static aliases = ['cm:export-query'];
-
   async run(): Promise<void> {
     try {
       const { flags } = await this.parse(ExportQueryCommand);
