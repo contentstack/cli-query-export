@@ -1,4 +1,6 @@
 fileignoreconfig:
-  - filename: package-lock.json
-    checksum: 4e00357992422982d516ee3231f87a1f98f27c12788c63a6a089cafa059b6b9e
+  - filename: src/utils/config-handler.ts
+    checksum: a23fb2f3034046f68d0c24de9a50855579bb0bc86cbc6485aec0f315c9a42d77
+  - filename: src/commands/cm/stacks/export-query.ts
+    checksum: 0a94bd30d852b2d8acb102eaabf602e397a649a7dc7c671efcb66b56d67dc7b7
 version: '1.0'
