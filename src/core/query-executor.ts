@@ -40,6 +40,19 @@ export class QueryExporter {
     // Step 4: Export queried modules
     await this.exportQueriedModule(parsedQuery);
 
+    // Step 1: Read initial content types and mark them as exported
+    const contentTypesFilePath = path.join(
+      sanitizePath(this.exportQueryConfig.exportDir),
+      sanitizePath(this.exportQueryConfig.branchName || ''),
+      'content_types',
+      'schema.json',
+    );
+    const contentTypes: any = fsUtil.readFile(sanitizePath(contentTypesFilePath)) || [];
+    if (contentTypes.length === 0) {
+      log(this.exportQueryConfig, 'No content types found, skipping export', 'info');
+      process.exit(0);
+    }
+
     // Step 5: export other content types which are referenced in previous step
     await this.exportReferencedContentTypes();
     // Step 6: export dependent modules global fields, extensions, taxonomies
@@ -84,8 +97,8 @@ export class QueryExporter {
 
       // Step 1: Read initial content types and mark them as exported
       const contentTypesFilePath = path.join(
-        this.exportQueryConfig.exportDir,
-        this.exportQueryConfig.branchName || '',
+        sanitizePath(this.exportQueryConfig.exportDir),
+        sanitizePath(this.exportQueryConfig.branchName || ''),
         'content_types',
         'schema.json',
       );

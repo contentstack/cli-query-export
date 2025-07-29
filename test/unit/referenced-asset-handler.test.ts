@@ -1,6 +1,6 @@
 import { expect } from 'chai';
-import { AssetReferenceHandler } from '../../../src/utils/referenced-asset-handler';
-import { QueryExportConfig } from '../../../src/types';
+import { AssetReferenceHandler } from '../../src/utils/referenced-asset-handler';
+import { QueryExportConfig } from '../../src/types';
 
 describe('Referenced Asset Handler Utilities', () => {
   let handler: AssetReferenceHandler;

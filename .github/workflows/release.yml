@@ -1,0 +1,43 @@
+name: Release CLI Export Query Plugin
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 7
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22.x'
+
+      - name: Installing dependencies
+        id: dependencies-installation
+        working-directory: ./
+        run: npm install
+      - name: Compiling
+        id: compile-process
+        if: ${{ steps.dependencies-installation.conclusion == 'success'  }}
+        working-directory: ./
+        run: npm run prepack
+      - name: Publishing (Beta version)
+        id: publish-plugin
+        uses: JS-DevTools/npm-publish@v3
+        if: ${{ steps.compile-process.conclusion == 'success'  }}
+        with:
+          token: ${{ secrets.NPM_TOKEN }}
+          package: ./package.json
+          access: public
+          tag: beta
+      - name: Create Release
+        if: ${{ steps.publish-plugin.conclusion == 'success'  }}
+        id: create_release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VERSION: ${{ steps.publish-plugin.outputs.version }}
+        run: gh release create v"$VERSION" --title "Release $VERSION" --generate-notes
