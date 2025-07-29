@@ -1,8 +1,8 @@
 import { expect } from 'chai';
 import * as sinon from 'sinon';
 import * as path from 'path';
-import { setupQueryExportConfig } from '../../../src/utils/config-handler';
-import * as commonHelper from '../../../src/utils/common-helper';
+import { setupQueryExportConfig } from '../../src/utils/config-handler';
+import * as commonHelper from '../../src/utils/common-helper';
 
 // Mock the external utilities module
 const mockCliUtilities = {

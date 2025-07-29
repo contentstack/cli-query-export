@@ -1,7 +1,7 @@
 import { expect } from 'chai';
 import * as sinon from 'sinon';
-import { ContentTypeDependenciesHandler } from '../../../src/utils/dependency-resolver';
-import { QueryExportConfig } from '../../../src/types';
+import { ContentTypeDependenciesHandler } from '../../src/utils/dependency-resolver';
+import { QueryExportConfig } from '../../src/types';
 
 describe('Dependency Resolver Utilities', () => {
   let handler: ContentTypeDependenciesHandler;

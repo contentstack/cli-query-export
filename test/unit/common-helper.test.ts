@@ -1,7 +1,7 @@
 import { expect } from 'chai';
 import { stub, restore, SinonStub } from 'sinon';
 import { cliux } from '@contentstack/cli-utilities';
-import { askAPIKey } from '../../../src/utils/common-helper';
+import { askAPIKey } from '../../src/utils/common-helper';
 
 describe('Common Helper Utilities', () => {
   let cliuxInquireStub: SinonStub;
