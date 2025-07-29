@@ -9,7 +9,7 @@ import {
 } from '@contentstack/cli-utilities';
 import { QueryExporter } from '../../../core/query-executor';
 import { QueryExportConfig } from '../../../types';
-import { log, setupQueryExportConfig } from '../../../utils';
+import { log, setupQueryExportConfig, setupBranches } from '../../../utils';
 
 export default class ExportQueryCommand extends Command {
   static description = 'Export content from a stack using query-based filtering';
@@ -77,8 +77,20 @@ export default class ExportQueryCommand extends Command {
       }
 
       this.exportDir = sanitizePath(exportQueryConfig.exportDir);
-      // Initialize and run query export
+
+      // Initialize management API client
       const managementAPIClient: ContentstackClient = await managementSDKClient(exportQueryConfig);
+
+      // Setup and validate branch configuration
+      const stackAPIClient = managementAPIClient.stack({
+        api_key: exportQueryConfig.stackApiKey,
+        management_token: exportQueryConfig.managementToken,
+      });
+
+      // Setup branches (validate branch or set default to 'main')
+      await setupBranches(exportQueryConfig, stackAPIClient);
+
+      // Initialize and run query export
       const queryExporter = new QueryExporter(managementAPIClient, exportQueryConfig);
       await queryExporter.execute();
 
