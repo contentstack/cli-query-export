@@ -6,3 +6,4 @@ export * from './config-handler';
 export * from './content-type-helper';
 export * from './dependency-resolver';
 export * from './referenced-asset-handler';
+export { setupBranches } from './branch-helper';
