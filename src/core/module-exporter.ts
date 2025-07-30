@@ -20,8 +20,6 @@ export class ModuleExporter {
       // Build command arguments
       const cmd = this.buildExportCommand(moduleName, options);
 
-      log(this.exportQueryConfig, `Running export command: ${cmd.join(' ')}`, 'debug');
-
       // Configurable delay
       const delay = this.exportQueryConfig.exportDelayMs || 2000;
       await new Promise((resolve) => setTimeout(resolve, delay));

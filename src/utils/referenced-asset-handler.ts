@@ -109,13 +109,21 @@ export class AssetReferenceHandler {
       }
     }
 
+    let assetUrlRegex = '';
+    let assetUIDMatchIndex;
+    if (process.env.ENVIRONMENT === 'NON_PROD') {
+      assetUrlRegex = '(https://.*?/v3/assets/(.*?)/(.*?)/(.*?)/(.*?)(?="))';
+      assetUIDMatchIndex = 3;
+    } else {
+      assetUrlRegex =
+        '(https://(assets|(eu-|azure-na-|azure-eu-|gcp-na-|gcp-eu-)?images).contentstack.(io|com)/v3/assets/(.*?)/(.*?)/(.*?)/(.*?)(?="))';
+      assetUIDMatchIndex = 6;
+    }
+
     // Pattern 2: Contentstack asset URLs
-    const urlRegex = new RegExp(
-      '(https://(assets|(eu-|azure-na-|azure-eu-|gcp-na-|gcp-eu-)?images).contentstack.(io|com)/v3/assets/(.*?)/(.*?)/(.*?)/(.*?)(?="))',
-      'g',
-    );
+    const urlRegex = new RegExp(assetUrlRegex, 'g');
     while ((match = urlRegex.exec(content)) !== null) {
-      const assetUID = match[6]; // The asset UID is in the 6th capture group
+      const assetUID = match[assetUIDMatchIndex]; // The asset UID is in the 6th capture group
       if (assetUID) {
         assetUIDs.add(assetUID);
       }
