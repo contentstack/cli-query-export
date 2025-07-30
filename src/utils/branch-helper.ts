@@ -42,7 +42,8 @@ export const setupBranches = async (config: QueryExportConfig, stackAPIClient: a
         .branch()
         .query()
         .find()
-        .catch((err: Error): any => {
+        .catch((): any => {
+          log(config, 'Stack does not have branches', 'info');
           return null;
         });
 
