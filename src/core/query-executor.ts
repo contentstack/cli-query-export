@@ -311,7 +311,6 @@ export class QueryExporter {
         const batchSize = this.exportQueryConfig.assetBatchSize || 100;
 
         if (assetUIDs.length <= batchSize) {
-          log(this.exportQueryConfig, `Asset size is bigger than batch size, skipping export`, 'info');
           const query = {
             modules: {
               assets: {
