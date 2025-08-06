@@ -33,7 +33,6 @@ jobs:
           token: ${{ secrets.NPM_TOKEN }}
           package: ./package.json
           access: public
-          tag: beta
       - name: Create Release
         if: ${{ steps.publish-plugin.conclusion == 'success'  }}
         id: create_release
