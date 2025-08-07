@@ -328,7 +328,7 @@ export class QueryExporter {
         log(this.exportQueryConfig, `Processing assets in ${totalBatches} batches of ${batchSize}`, 'info');
 
         // Process assets in batches
-        for (let i = 0; i < 2; i++) {
+        for (let i = 0; i < batchSize; i++) {
           const start = i * batchSize;
           const end = Math.min(start + batchSize, assetUIDs.length);
           const batchAssetUIDs = assetUIDs.slice(start, end);
