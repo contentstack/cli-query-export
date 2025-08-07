@@ -24,6 +24,11 @@ export async function setupQueryExportConfig(flags: any): Promise<QueryExportCon
     externalConfigPath: path.join(__dirname, '../config/export-config.json'),
   };
 
+  // override the external config path if the user provides a config file
+  if (flags.config) {
+    exportQueryConfig.externalConfigPath = sanitizePath(flags['config']);
+  }
+
   // Handle authentication
   if (flags.alias) {
     const { token, apiKey } = configHandler.get(`tokens.${flags.alias}`) || {};

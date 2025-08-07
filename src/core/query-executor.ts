@@ -286,23 +286,137 @@ export class QueryExporter {
     log(this.exportQueryConfig, 'Starting export of referenced assets...', 'info');
 
     try {
+      const assetsDir = path.join(
+        sanitizePath(this.exportQueryConfig.exportDir),
+        sanitizePath(this.exportQueryConfig.branchName || ''),
+        'assets',
+      );
+
+      const metadataFilePath = path.join(assetsDir, 'metadata.json');
+      const assetFilePath = path.join(assetsDir, 'assets.json');
+
+      // Define temp file paths
+      const tempMetadataFilePath = path.join(assetsDir, 'metadata_temp.json');
+      const tempAssetFilePath = path.join(assetsDir, 'assets_temp.json');
+
       const assetHandler = new AssetReferenceHandler(this.exportQueryConfig);
 
       // Extract referenced asset UIDs from all entries
       const assetUIDs = assetHandler.extractReferencedAssets();
 
       if (assetUIDs.length > 0) {
-        log(this.exportQueryConfig, `Exporting ${assetUIDs.length} referenced assets...`, 'info');
+        log(this.exportQueryConfig, `Found ${assetUIDs.length} referenced assets to export`, 'info');
 
-        const query = {
-          modules: {
-            assets: {
-              uid: { $in: assetUIDs },
+        // Define batch size - can be configurable through exportQueryConfig
+        const batchSize = this.exportQueryConfig.assetBatchSize || 100;
+
+        if (assetUIDs.length <= batchSize) {
+          const query = {
+            modules: {
+              assets: {
+                uid: { $in: assetUIDs },
+              },
             },
-          },
-        };
+          };
 
-        await this.moduleExporter.exportModule('assets', { query });
+          await this.moduleExporter.exportModule('assets', { query });
+        }
+
+        // if asset size is bigger than batch size, then we need to export in batches
+        // Calculate number of batches
+        const totalBatches = Math.ceil(assetUIDs.length / batchSize);
+        log(this.exportQueryConfig, `Processing assets in ${totalBatches} batches of ${batchSize}`, 'info');
+
+        // Process assets in batches
+        for (let i = 0; i < batchSize; i++) {
+          const start = i * batchSize;
+          const end = Math.min(start + batchSize, assetUIDs.length);
+          const batchAssetUIDs = assetUIDs.slice(start, end);
+
+          log(
+            this.exportQueryConfig,
+            `Exporting batch ${i + 1}/${totalBatches} (${batchAssetUIDs.length} assets)...`,
+            'info',
+          );
+
+          const query = {
+            modules: {
+              assets: {
+                uid: { $in: batchAssetUIDs },
+              },
+            },
+          };
+
+          await this.moduleExporter.exportModule('assets', { query });
+
+          // Read the current batch's metadata.json and assets.json files
+          const currentMetadata: any = fsUtil.readFile(sanitizePath(metadataFilePath));
+          const currentAssets: any = fsUtil.readFile(sanitizePath(assetFilePath));
+
+          // Check if this is the first batch
+          if (i === 0) {
+            // For first batch, initialize temp files with current content
+            fsUtil.writeFile(sanitizePath(tempMetadataFilePath), currentMetadata);
+            fsUtil.writeFile(sanitizePath(tempAssetFilePath), currentAssets);
+            log(this.exportQueryConfig, `Initialized temporary files with first batch data`, 'info');
+          } else {
+            // For subsequent batches, append to temp files with incremented keys
+
+            // Handle metadata (which contains arrays of asset info)
+            const tempMetadata: any = fsUtil.readFile(sanitizePath(tempMetadataFilePath)) || {};
+
+            // Merge metadata by combining arrays
+            if (currentMetadata) {
+              Object.keys(currentMetadata).forEach((key: string) => {
+                if (!tempMetadata[key]) {
+                  tempMetadata[key] = currentMetadata[key];
+                }
+              });
+            }
+
+            // Write updated metadata back to temp file
+            fsUtil.writeFile(sanitizePath(tempMetadataFilePath), tempMetadata);
+
+            // Handle assets (which is an object with numeric keys)
+            const tempAssets: any = fsUtil.readFile(sanitizePath(tempAssetFilePath)) || {};
+            let nextIndex = Object.keys(tempAssets).length + 1;
+
+            // Add current assets with incremented keys
+            Object.values(currentAssets).forEach((value: any) => {
+              tempAssets[nextIndex.toString()] = value;
+              nextIndex++;
+            });
+
+            fsUtil.writeFile(sanitizePath(tempAssetFilePath), tempAssets);
+
+            log(this.exportQueryConfig, `Updated temporary files with batch ${i + 1} data`, 'info');
+          }
+
+          // Optional: Add delay between batches to avoid rate limiting
+          if (i < totalBatches - 1 && this.exportQueryConfig.batchDelayMs) {
+            log(
+              this.exportQueryConfig,
+              `Waiting ${this.exportQueryConfig.batchDelayMs}ms before next batch...`,
+              'info',
+            );
+            await new Promise((resolve) => setTimeout(resolve, this.exportQueryConfig.batchDelayMs));
+          }
+        }
+
+        // After all batches are processed, copy temp files back to original files
+        const finalMetadata = fsUtil.readFile(sanitizePath(tempMetadataFilePath));
+        const finalAssets = fsUtil.readFile(sanitizePath(tempAssetFilePath));
+
+        fsUtil.writeFile(sanitizePath(metadataFilePath), finalMetadata);
+        fsUtil.writeFile(sanitizePath(assetFilePath), finalAssets);
+
+        log(this.exportQueryConfig, `Final data written back to original files`, 'info');
+
+        // Clean up temp files
+        fsUtil.removeFile(sanitizePath(tempMetadataFilePath));
+        fsUtil.removeFile(sanitizePath(tempAssetFilePath));
+
+        log(this.exportQueryConfig, `Temporary files cleaned up`, 'info');
         log(this.exportQueryConfig, 'Referenced assets exported successfully', 'success');
       } else {
         log(this.exportQueryConfig, 'No referenced assets found in entries', 'info');
