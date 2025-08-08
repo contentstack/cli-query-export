@@ -328,7 +328,7 @@ export class QueryExporter {
         log(this.exportQueryConfig, `Processing assets in ${totalBatches} batches of ${batchSize}`, 'info');
 
         // Process assets in batches
-        for (let i = 0; i < batchSize; i++) {
+        for (let i = 0; i < totalBatches; i++) {
           const start = i * batchSize;
           const end = Math.min(start + batchSize, assetUIDs.length);
           const batchAssetUIDs = assetUIDs.slice(start, end);
@@ -394,11 +394,6 @@ export class QueryExporter {
 
           // Optional: Add delay between batches to avoid rate limiting
           if (i < totalBatches - 1 && this.exportQueryConfig.batchDelayMs) {
-            log(
-              this.exportQueryConfig,
-              `Waiting ${this.exportQueryConfig.batchDelayMs}ms before next batch...`,
-              'info',
-            );
             await new Promise((resolve) => setTimeout(resolve, this.exportQueryConfig.batchDelayMs));
           }
         }
