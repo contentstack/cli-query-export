@@ -185,6 +185,9 @@ export interface QueryExportConfig extends DefaultConfig {
   logsPath: string;
   dataPath: string;
   exportDelayMs?: number;
+  batchDelayMs?: number;
+  assetBatchSize?: number;
+  assetBatchDelayMs?: number;
 }
 
 export interface QueryMetadata {
