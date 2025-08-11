@@ -1,4 +1,6 @@
 fileignoreconfig:
   - filename: .env-example
     checksum: 591f1e672d4df287107092b8fd37c27913e09225c6ced55293e1d459b1119d05
+  - filename: src/core/query-executor.ts
+    checksum: 53f90091c9877c79f43bf0e3dcc26281f0c6b2073d63380803cda1481712a5ae
 version: '1.0'
