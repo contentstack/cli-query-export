@@ -1,0 +1,4 @@
+fileignoreconfig:
+  - filename: src/core/query-executor.ts
+    checksum: 3d0b5cf07f5a87256f132f85a5556d193ce5a1fa6d92df2c7c50514071d592b7
+version: '1.0'
