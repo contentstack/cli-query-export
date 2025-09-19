@@ -1,7 +1,6 @@
-import * as path from 'path';
-import { sanitizePath } from '@contentstack/cli-utilities';
+
+import { getBranchFromAlias} from '@contentstack/cli-utilities';
 import { QueryExportConfig } from '../types';
-import { fsUtil } from './file-helper';
 import { log } from './logger';
 
 /**
@@ -17,6 +16,10 @@ export const setupBranches = async (config: QueryExportConfig, stackAPIClient: a
   }
 
   try {
+    if (config.branchAlias) {
+      config.branchName = await getBranchFromAlias(stackAPIClient, config.branchAlias);
+      return;
+    }
     if (config.branchName) {
       // Check if the specified branch exists
       log(config, `Validating branch: ${config.branchName}`, 'info');
