@@ -2,8 +2,7 @@ import { formatError } from '@contentstack/cli-utilities';
 import ExportCommand from '@contentstack/cli-cm-export';
 import { QueryExportConfig, Modules, ExportOptions } from '../types';
 import { log } from '../utils/logger';
-import config from '../config';
-import * as path from 'path';
+
 
 export class ModuleExporter {
   private exportQueryConfig: QueryExportConfig;
