@@ -1,4 +1,6 @@
 fileignoreconfig:
   - filename: src/core/query-executor.ts
     checksum: 3d0b5cf07f5a87256f132f85a5556d193ce5a1fa6d92df2c7c50514071d592b7
+  - filename: package-lock.json
+    checksum: 37a33f085b6df7ee03b326885bc38957b84fdb17984a3b03de04fd6921b42fee
 version: '1.0'

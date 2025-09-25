@@ -181,6 +181,7 @@ export interface QueryExportConfig extends DefaultConfig {
   stackApiKey: string;
   managementToken?: string;
   branchName: string;
+  branchAlias?: string;
   securedAssets: boolean;
   logsPath: string;
   dataPath: string;
