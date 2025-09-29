@@ -43,6 +43,11 @@ export default class ExportQueryCommand extends Command {
     }),
     branch: flags.string({
       description: 'Branch name to export from',
+      exclusive: ['branch-alias'],
+    }),
+    'branch-alias': flags.string({
+      description: 'Alias of Branch to export from',
+      exclusive: ['branch'],
     }),
     query: flags.string({
       required: true,
