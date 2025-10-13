@@ -38,17 +38,17 @@ export async function setupQueryExportConfig(flags: any): Promise<QueryExportCon
     exportQueryConfig.managementToken = token;
     exportQueryConfig.stackApiKey = apiKey;
     if (!exportQueryConfig.managementToken) {
-      throw new Error(`No management token found on given alias ${flags.alias}`);
+      throw new Error(`No management token found for alias ${flags.alias}.`);
     }
   }
 
   if (!exportQueryConfig.managementToken) {
     if (!isAuthenticated()) {
-      throw new Error('Please login or provide an alias for the management token');
+      throw new Error('Log in or provide an alias for the management token.');
     } else {
       exportQueryConfig.stackApiKey = flags['stack-api-key'] || (await askAPIKey());
       if (typeof exportQueryConfig.stackApiKey !== 'string') {
-        throw new Error('Invalid API key received');
+        throw new Error('The API key is invalid.');
       }
     }
   }
