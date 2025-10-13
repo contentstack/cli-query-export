@@ -70,7 +70,7 @@ export class ContentTypeDependenciesHandler {
           'info',
         );
       } catch (error) {
-        log(this.exportQueryConfig, `Error separating extensions and marketplace apps: ${error.message}`, 'error');
+        log(this.exportQueryConfig, `Failed to separate extensions and Marketplace apps: ${error.message}`, 'error');
         // Keep original extensions if separation fails
       }
     } else {
@@ -131,7 +131,7 @@ export class ContentTypeDependenciesHandler {
 
       return { extensions: regularExtensions, marketplaceApps };
     } catch (error) {
-      log(this.exportQueryConfig, `Error fetching extensions and marketplace apps: ${error.message}`, 'error');
+      log(this.exportQueryConfig, `Failed to fetch extensions and Marketplace apps: ${error.message}`, 'error');
       return { extensions: extensionUIDs, marketplaceApps: [] };
     }
   }
