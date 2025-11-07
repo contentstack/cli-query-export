@@ -52,7 +52,7 @@ export class AssetReferenceHandler {
 
       return result;
     } catch (error) {
-      log(this.exportQueryConfig, `Error extracting assets: ${error.message}`, 'error');
+      log(this.exportQueryConfig, `Failed to extract assets: ${error.message}`, 'error');
       return [];
     }
   }
@@ -89,7 +89,7 @@ export class AssetReferenceHandler {
 
       return entriesCount;
     } catch (error) {
-      log(this.exportQueryConfig, `Error processing file ${filePath}: ${error.message}`, 'warn');
+      log(this.exportQueryConfig, `Failed to process file ${filePath}: ${error.message}`, 'warn');
       return 0;
     }
   }
@@ -152,7 +152,7 @@ export class AssetReferenceHandler {
         }
       }
     } catch (error) {
-      log(this.exportQueryConfig, `Error reading directory ${dir}: ${error.message}`, 'warn');
+      log(this.exportQueryConfig, `Failed to read directory ${dir}: ${error.message}`, 'warn');
     }
 
     return jsonFiles;
