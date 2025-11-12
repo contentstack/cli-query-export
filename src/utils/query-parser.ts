@@ -28,7 +28,7 @@ export class QueryParser {
       const content = fs.readFileSync(filePath, 'utf-8');
       return JSON.parse(content);
     } catch (error) {
-      throw new CLIError(`Failed to parse query file: ${error.message}`);
+      throw new CLIError(`Failed to parse the query file: ${error.message}`);
     }
   }
 
@@ -42,16 +42,16 @@ export class QueryParser {
 
   private validate(query: any): void {
     if (!query || typeof query !== 'object') {
-      throw new CLIError('Query must be a valid JSON object');
+      throw new CLIError('The query must be a valid JSON object.');
     }
 
     if (!query.modules || typeof query.modules !== 'object') {
-      throw new CLIError('Query must contain a "modules" object');
+      throw new CLIError('The query must contain a "modules" object.');
     }
 
     const modules = Object.keys(query.modules);
     if (modules.length === 0) {
-      throw new CLIError('Query must contain at least one module');
+      throw new CLIError('The query must contain at least one module.');
     }
 
     // Validate supported modules

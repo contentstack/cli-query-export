@@ -12,7 +12,7 @@ import { log } from './logger';
  */
 export const setupBranches = async (config: QueryExportConfig, stackAPIClient: any): Promise<void> => {
   if (typeof config !== 'object') {
-    throw new Error('Invalid config to setup the branch');
+    throw new Error('The branch configuration is invalid.');
   }
 
   try {
@@ -35,7 +35,7 @@ export const setupBranches = async (config: QueryExportConfig, stackAPIClient: a
       if (result && typeof result === 'object') {
         log(config, `Branch '${config.branchName}' found`, 'success');
       } else {
-        throw new Error(`No branch found with the name '${config.branchName}'`);
+        throw new Error(`No branch found named ${config.branchName}.`);
       }
     } else {
       // If no branch name provided, check if the stack has branches
