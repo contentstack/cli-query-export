@@ -33,6 +33,7 @@ export class QueryExporter {
     log.info('Starting query-based export...', this.logContext);
 
     // Step 1: Parse and validate query
+    log.debug('Parsing and validating query', this.logContext);
     const parsedQuery = await this.queryParser.parse(this.exportQueryConfig.query);
     log.info('Query parsed and validated successfully', this.logContext);
 
@@ -56,10 +57,13 @@ export class QueryExporter {
     }
 
     // Step 5: export other content types which are referenced in previous step
+    log.debug('Starting referenced content types export', this.logContext);
     await this.exportReferencedContentTypes();
     // Step 6: export dependent modules global fields, extensions, taxonomies
+    log.debug('Starting dependent modules export', this.logContext);
     await this.exportDependentModules();
     // Step 7: export content modules entries, assets
+    log.debug('Starting content modules export', this.logContext);
     await this.exportContentModules();
     // Step 9: export all other modules
 
@@ -76,6 +80,7 @@ export class QueryExporter {
   }
 
   private async exportQueriedModule(parsedQuery: any): Promise<void> {
+    log.debug('Starting queried module export', this.logContext);
     for (const [moduleName] of Object.entries(parsedQuery.modules)) {
       const module = moduleName as Modules;
 
@@ -88,6 +93,7 @@ export class QueryExporter {
       // Export the queried module
       await this.moduleExporter.exportModule(module, { query: parsedQuery });
     }
+    log.debug('Queried module export completed', this.logContext);
   }
 
   private async exportReferencedContentTypes(): Promise<void> {
@@ -120,6 +126,7 @@ export class QueryExporter {
       // Step 3: Process batches until no new references are found
       while (currentBatch.length > 0 && iterationCount < this.exportQueryConfig.maxCTReferenceDepth) {
         iterationCount++;
+        log.debug(`Processing referenced content types iteration ${iterationCount}`, this.logContext);
         currentBatch.forEach((ct: any) => exportedContentTypeUIDs.add(ct.uid));
         // Extract referenced content types from current batch
         const referencedUIDs = await referencedHandler.extractReferencedContentTypes(currentBatch);
@@ -178,6 +185,7 @@ export class QueryExporter {
 
       // Extract dependencies from all exported content types
       const dependencies = await dependenciesHandler.extractDependencies();
+      log.debug('Dependencies extracted successfully', this.logContext);
 
       // Export Global Fields
       if (dependencies.globalFields.size > 0) {
@@ -303,6 +311,7 @@ export class QueryExporter {
       const assetHandler = new AssetReferenceHandler(this.exportQueryConfig);
 
       // Extract referenced asset UIDs from all entries
+      log.debug('Extracting referenced assets from entries', this.logContext);
       const assetUIDs = assetHandler.extractReferencedAssets();
 
       if (assetUIDs.length > 0) {
