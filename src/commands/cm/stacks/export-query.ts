@@ -6,10 +6,11 @@ import {
   formatError,
   managementSDKClient,
   ContentstackClient,
+  log,
 } from '@contentstack/cli-utilities';
 import { QueryExporter } from '../../../core/query-executor';
 import { QueryExportConfig } from '../../../types';
-import { log, setupQueryExportConfig, setupBranches } from '../../../utils';
+import { setupQueryExportConfig, setupBranches, createLogContext } from '../../../utils';
 
 export default class ExportQueryCommand extends Command {
   static description = 'Export content from a stack using query-based filtering';
@@ -99,10 +100,13 @@ export default class ExportQueryCommand extends Command {
       const queryExporter = new QueryExporter(managementAPIClient, exportQueryConfig);
       await queryExporter.execute();
 
-      log(exportQueryConfig, 'Query-based export completed successfully!', 'success');
-      log(exportQueryConfig, `Export files saved to: ${this.exportDir}`, 'info');
+      const context = createLogContext(exportQueryConfig);
+      log.info('Query-based export completed successfully!', context);
+      log.info(`Export files saved to: ${this.exportDir}`, context);
     } catch (error) {
-      log({ exportDir: this.exportDir } as QueryExportConfig, `Export failed: ${formatError(error)}`, 'error');
+      const errorConfig = { exportDir: this.exportDir, stackApiKey: '' } as QueryExportConfig;
+      const errorContext = createLogContext(errorConfig);
+      log.error(`Export failed: ${formatError(error)}`, errorContext);
       throw error;
     }
   }
