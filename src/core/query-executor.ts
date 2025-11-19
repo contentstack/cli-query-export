@@ -1,9 +1,9 @@
-import { ContentstackClient, sanitizePath } from '@contentstack/cli-utilities';
+import { ContentstackClient, sanitizePath, log } from '@contentstack/cli-utilities';
 import * as path from 'path';
 import { QueryExportConfig, Modules } from '../types';
 import { QueryParser } from '../utils/query-parser';
 import { ModuleExporter } from './module-exporter';
-import { log } from '../utils/logger';
+import { createLogContext } from '../utils/logger';
 import { ReferencedContentTypesHandler } from '../utils';
 import { fsUtil } from '../utils';
 import { ContentTypeDependenciesHandler } from '../utils';
@@ -14,9 +14,11 @@ export class QueryExporter {
   private exportQueryConfig: QueryExportConfig;
   private queryParser: QueryParser;
   private moduleExporter: ModuleExporter;
+  private logContext: any;
 
   constructor(managementAPIClient: ContentstackClient, exportQueryConfig: QueryExportConfig) {
     this.exportQueryConfig = exportQueryConfig;
+    this.logContext = createLogContext(exportQueryConfig);
 
     this.stackAPIClient = managementAPIClient.stack({
       api_key: exportQueryConfig.stackApiKey,
@@ -28,11 +30,11 @@ export class QueryExporter {
   }
 
   async execute(): Promise<void> {
-    log(this.exportQueryConfig, 'Starting query-based export...', 'info');
+    log.info('Starting query-based export...', this.logContext);
 
     // Step 1: Parse and validate query
     const parsedQuery = await this.queryParser.parse(this.exportQueryConfig.query);
-    log(this.exportQueryConfig, 'Query parsed and validated successfully', 'success');
+    log.info('Query parsed and validated successfully', this.logContext);
 
     // Step 2: Always export general modules
     await this.exportGeneralModules();
@@ -49,7 +51,7 @@ export class QueryExporter {
     );
     const contentTypes: any = fsUtil.readFile(sanitizePath(contentTypesFilePath)) || [];
     if (contentTypes.length === 0) {
-      log(this.exportQueryConfig, 'No content types found, skipping export', 'info');
+      log.info('No content types found, skipping export', this.logContext);
       process.exit(0);
     }
 
@@ -61,12 +63,12 @@ export class QueryExporter {
     await this.exportContentModules();
     // Step 9: export all other modules
 
-    log(this.exportQueryConfig, 'Query-based export completed successfully!', 'success');
+    log.info('Query-based export completed successfully!', this.logContext);
   }
 
   // export general modules
   private async exportGeneralModules(): Promise<void> {
-    log(this.exportQueryConfig, 'Exporting general modules...', 'info');
+    log.info('Exporting general modules...', this.logContext);
 
     for (const module of this.exportQueryConfig.modules.general) {
       await this.moduleExporter.exportModule(module);
@@ -78,18 +80,18 @@ export class QueryExporter {
       const module = moduleName as Modules;
 
       if (!this.exportQueryConfig.modules.queryable.includes(module)) {
-        log(this.exportQueryConfig, `Module "${module}" is not queryable`, 'error');
+        log.error(`Module "${module}" is not queryable`, this.logContext);
         continue;
       }
 
-      log(this.exportQueryConfig, `Exporting ${moduleName} with query...`, 'info');
+      log.info(`Exporting ${moduleName} with query...`, this.logContext);
       // Export the queried module
       await this.moduleExporter.exportModule(module, { query: parsedQuery });
     }
   }
 
   private async exportReferencedContentTypes(): Promise<void> {
-    log(this.exportQueryConfig, 'Starting export of referenced content types...', 'info');
+    log.info('Starting export of referenced content types...', this.logContext);
 
     try {
       const referencedHandler = new ReferencedContentTypesHandler(this.exportQueryConfig);
@@ -104,14 +106,14 @@ export class QueryExporter {
       );
       const contentTypes: any = fsUtil.readFile(sanitizePath(contentTypesFilePath)) || [];
       if (contentTypes.length === 0) {
-        log(this.exportQueryConfig, 'No content types found, skipping referenced content types export', 'info');
+        log.info('No content types found, skipping referenced content types export', this.logContext);
         return;
       }
 
       // Step 2: Start with initial batch (all currently exported content types)
       let currentBatch = [...contentTypes];
 
-      log(this.exportQueryConfig, `Starting with ${currentBatch.length} initial content types`, 'info');
+      log.info(`Starting with ${currentBatch.length} initial content types`, this.logContext);
 
       // track reference depth
       let iterationCount = 0;
@@ -126,10 +128,9 @@ export class QueryExporter {
         const newReferencedUIDs = referencedUIDs.filter((uid: string) => !exportedContentTypeUIDs.has(uid));
 
         if (newReferencedUIDs.length > 0) {
-          log(
-            this.exportQueryConfig,
+          log.info(
             `Found ${newReferencedUIDs.length} new referenced content types to fetch`,
-            'info',
+            this.logContext,
           );
 
           // // Add to exported set to avoid duplicates in future iterations
@@ -154,23 +155,23 @@ export class QueryExporter {
           // Push new content types to main array
           contentTypes.push(...newContentTypes);
 
-          log(this.exportQueryConfig, `Fetched ${currentBatch.length} new content types for next iteration`, 'info');
+          log.info(`Fetched ${currentBatch.length} new content types for next iteration`, this.logContext);
         } else {
-          log(this.exportQueryConfig, 'No new referenced content types found, stopping recursion', 'info');
+          log.info('No new referenced content types found, stopping recursion', this.logContext);
           break;
         }
       }
 
       fsUtil.writeFile(sanitizePath(contentTypesFilePath), contentTypes);
-      log(this.exportQueryConfig, 'Referenced content types export completed successfully', 'success');
+      log.info('Referenced content types export completed successfully', this.logContext);
     } catch (error) {
-      log(this.exportQueryConfig, `Error exporting referenced content types: ${error.message}`, 'error');
+      log.error(`Error exporting referenced content types: ${error.message}`, this.logContext);
       throw error;
     }
   }
 
   private async exportDependentModules(): Promise<void> {
-    log(this.exportQueryConfig, 'Starting export of dependent modules...', 'info');
+    log.info('Starting export of dependent modules...', this.logContext);
 
     try {
       const dependenciesHandler = new ContentTypeDependenciesHandler(this.stackAPIClient, this.exportQueryConfig);
@@ -181,7 +182,7 @@ export class QueryExporter {
       // Export Global Fields
       if (dependencies.globalFields.size > 0) {
         const globalFieldUIDs = Array.from(dependencies.globalFields);
-        log(this.exportQueryConfig, `Exporting ${globalFieldUIDs.length} global fields...`, 'info');
+        log.info(`Exporting ${globalFieldUIDs.length} global fields...`, this.logContext);
 
         const query = {
           modules: {
@@ -196,7 +197,7 @@ export class QueryExporter {
       // Export Extensions
       if (dependencies.extensions.size > 0) {
         const extensionUIDs = Array.from(dependencies.extensions);
-        log(this.exportQueryConfig, `Exporting ${extensionUIDs.length} extensions...`, 'info');
+        log.info(`Exporting ${extensionUIDs.length} extensions...`, this.logContext);
 
         const query = {
           modules: {
@@ -211,7 +212,7 @@ export class QueryExporter {
       // export marketplace apps
       if (dependencies.marketplaceApps.size > 0) {
         const marketplaceAppInstallationUIDs = Array.from(dependencies.marketplaceApps);
-        log(this.exportQueryConfig, `Exporting ${marketplaceAppInstallationUIDs.length} marketplace apps...`, 'info');
+        log.info(`Exporting ${marketplaceAppInstallationUIDs.length} marketplace apps...`, this.logContext);
         const query = {
           modules: {
             'marketplace-apps': {
@@ -225,7 +226,7 @@ export class QueryExporter {
       // Export Taxonomies
       if (dependencies.taxonomies.size > 0) {
         const taxonomyUIDs = Array.from(dependencies.taxonomies);
-        log(this.exportQueryConfig, `Exporting ${taxonomyUIDs.length} taxonomies...`, 'info');
+        log.info(`Exporting ${taxonomyUIDs.length} taxonomies...`, this.logContext);
 
         const query = {
           modules: {
@@ -240,15 +241,15 @@ export class QueryExporter {
       // export personalize
       await this.moduleExporter.exportModule('personalize');
 
-      log(this.exportQueryConfig, 'Dependent modules export completed successfully', 'success');
+      log.info('Dependent modules export completed successfully', this.logContext);
     } catch (error) {
-      log(this.exportQueryConfig, `Error exporting dependent modules: ${error.message}`, 'error');
+      log.error(`Error exporting dependent modules: ${error.message}`, this.logContext);
       throw error;
     }
   }
 
   private async exportContentModules(): Promise<void> {
-    log(this.exportQueryConfig, 'Starting export of content modules...', 'info');
+    log.info('Starting export of content modules...', this.logContext);
 
     try {
       // Step 1: Export entries for all exported content types
@@ -260,30 +261,30 @@ export class QueryExporter {
       await new Promise((resolve) => setTimeout(resolve, delay));
       await this.exportReferencedAssets();
 
-      log(this.exportQueryConfig, 'Content modules export completed successfully', 'success');
+      log.info('Content modules export completed successfully', this.logContext);
     } catch (error) {
-      log(this.exportQueryConfig, `Error exporting content modules: ${error.message}`, 'error');
+      log.error(`Error exporting content modules: ${error.message}`, this.logContext);
       throw error;
     }
   }
 
   private async exportEntries(): Promise<void> {
-    log(this.exportQueryConfig, 'Exporting entries...', 'info');
+    log.info('Exporting entries...', this.logContext);
 
     try {
       // Export entries - module exporter will automatically read exported content types
       // and export entries for all of them
       await this.moduleExporter.exportModule('entries');
 
-      log(this.exportQueryConfig, 'Entries export completed successfully', 'success');
+      log.info('Entries export completed successfully', this.logContext);
     } catch (error) {
-      log(this.exportQueryConfig, `Error exporting entries: ${error.message}`, 'error');
+      log.error(`Error exporting entries: ${error.message}`, this.logContext);
       throw error;
     }
   }
 
   private async exportReferencedAssets(): Promise<void> {
-    log(this.exportQueryConfig, 'Starting export of referenced assets...', 'info');
+    log.info('Starting export of referenced assets...', this.logContext);
 
     try {
       const assetsDir = path.join(
@@ -305,7 +306,7 @@ export class QueryExporter {
       const assetUIDs = assetHandler.extractReferencedAssets();
 
       if (assetUIDs.length > 0) {
-        log(this.exportQueryConfig, `Found ${assetUIDs.length} referenced assets to export`, 'info');
+        log.info(`Found ${assetUIDs.length} referenced assets to export`, this.logContext);
 
         // Define batch size - can be configurable through exportQueryConfig
         const batchSize = this.exportQueryConfig.assetBatchSize || 100;
@@ -325,7 +326,7 @@ export class QueryExporter {
         // if asset size is bigger than batch size, then we need to export in batches
         // Calculate number of batches
         const totalBatches = Math.ceil(assetUIDs.length / batchSize);
-        log(this.exportQueryConfig, `Processing assets in ${totalBatches} batches of ${batchSize}`, 'info');
+        log.info(`Processing assets in ${totalBatches} batches of ${batchSize}`, this.logContext);
 
         // Process assets in batches
         for (let i = 0; i < totalBatches; i++) {
@@ -333,10 +334,9 @@ export class QueryExporter {
           const end = Math.min(start + batchSize, assetUIDs.length);
           const batchAssetUIDs = assetUIDs.slice(start, end);
 
-          log(
-            this.exportQueryConfig,
+          log.info(
             `Exporting batch ${i + 1}/${totalBatches} (${batchAssetUIDs.length} assets)...`,
-            'info',
+            this.logContext,
           );
 
           const query = {
@@ -358,7 +358,7 @@ export class QueryExporter {
             // For first batch, initialize temp files with current content
             fsUtil.writeFile(sanitizePath(tempMetadataFilePath), currentMetadata);
             fsUtil.writeFile(sanitizePath(tempAssetFilePath), currentAssets);
-            log(this.exportQueryConfig, `Initialized temporary files with first batch data`, 'info');
+            log.info(`Initialized temporary files with first batch data`, this.logContext);
           } else {
             // For subsequent batches, append to temp files with incremented keys
 
@@ -389,7 +389,7 @@ export class QueryExporter {
 
             fsUtil.writeFile(sanitizePath(tempAssetFilePath), tempAssets);
 
-            log(this.exportQueryConfig, `Updated temporary files with batch ${i + 1} data`, 'info');
+            log.info(`Updated temporary files with batch ${i + 1} data`, this.logContext);
           }
 
           // Optional: Add delay between batches to avoid rate limiting
@@ -405,19 +405,19 @@ export class QueryExporter {
         fsUtil.writeFile(sanitizePath(metadataFilePath), finalMetadata);
         fsUtil.writeFile(sanitizePath(assetFilePath), finalAssets);
 
-        log(this.exportQueryConfig, `Final data written back to original files`, 'info');
+        log.info(`Final data written back to original files`, this.logContext);
 
         // Clean up temp files
         fsUtil.removeFile(sanitizePath(tempMetadataFilePath));
         fsUtil.removeFile(sanitizePath(tempAssetFilePath));
 
-        log(this.exportQueryConfig, `Temporary files cleaned up`, 'info');
-        log(this.exportQueryConfig, 'Referenced assets exported successfully', 'success');
+        log.info(`Temporary files cleaned up`, this.logContext);
+        log.info('Referenced assets exported successfully', this.logContext);
       } else {
-        log(this.exportQueryConfig, 'No referenced assets found in entries', 'info');
+        log.info('No referenced assets found in entries', this.logContext);
       }
     } catch (error) {
-      log(this.exportQueryConfig, `Error exporting referenced assets: ${error.message}`, 'error');
+      log.error(`Error exporting referenced assets: ${error.message}`, this.logContext);
       throw error;
     }
   }
