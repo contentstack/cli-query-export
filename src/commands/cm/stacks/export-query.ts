@@ -83,6 +83,8 @@ export default class ExportQueryCommand extends Command {
       }
 
       this.exportDir = sanitizePath(exportQueryConfig.exportDir);
+      const context = createLogContext(exportQueryConfig);
+      log.debug('Export configuration setup completed', context);
 
       // Initialize management API client
       const managementAPIClient: ContentstackClient = await managementSDKClient(exportQueryConfig);
@@ -95,12 +97,14 @@ export default class ExportQueryCommand extends Command {
 
       // Setup branches (validate branch or set default to 'main')
       await setupBranches(exportQueryConfig, stackAPIClient);
+      log.debug('Branch configuration setup completed', context);
 
       // Initialize and run query export
+      log.debug('Starting query exporter', context);
       const queryExporter = new QueryExporter(managementAPIClient, exportQueryConfig);
       await queryExporter.execute();
+      log.debug('Query exporter completed successfully', context);
 
-      const context = createLogContext(exportQueryConfig);
       log.info('Query-based export completed successfully!', context);
       log.info(`Export files saved to: ${this.exportDir}`, context);
     } catch (error) {
