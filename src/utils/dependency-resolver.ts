@@ -2,12 +2,12 @@ import * as path from 'path';
 import { QueryExportConfig } from '../types';
 import { fsUtil } from './index';
 import { ContentstackClient, sanitizePath, log } from '@contentstack/cli-utilities';
-import { createLogContext } from './logger';
+import { createLogContext, LogContext } from './logger';
 
 export class ContentTypeDependenciesHandler {
   private exportQueryConfig: QueryExportConfig;
   private stackAPIClient: ReturnType<ContentstackClient['stack']>;
-  private logContext: any;
+  private readonly logContext: LogContext;
 
   constructor(stackAPIClient: any, exportQueryConfig: QueryExportConfig) {
     this.exportQueryConfig = exportQueryConfig;

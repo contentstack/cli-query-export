@@ -168,9 +168,22 @@ export const unlinkFileLogger = () => {
 };
 
 /**
+ * Log context interface for centralized logging
+ */
+export interface LogContext {
+  command: string;
+  module: string;
+  email: string;
+  sessionId: string;
+  apiKey: string;
+  orgId: string;
+  authenticationMethod: string;
+}
+
+/**
  * Creates a context object for logging from QueryExportConfig
  */
-export function createLogContext(config: QueryExportConfig): any {
+export function createLogContext(config: QueryExportConfig): LogContext {
   return {
     command: 'cm:stacks:export-query',
     module: '',

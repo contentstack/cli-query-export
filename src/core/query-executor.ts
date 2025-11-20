@@ -3,7 +3,7 @@ import * as path from 'path';
 import { QueryExportConfig, Modules } from '../types';
 import { QueryParser } from '../utils/query-parser';
 import { ModuleExporter } from './module-exporter';
-import { createLogContext } from '../utils/logger';
+import { createLogContext, LogContext } from '../utils/logger';
 import { ReferencedContentTypesHandler } from '../utils';
 import { fsUtil } from '../utils';
 import { ContentTypeDependenciesHandler } from '../utils';
@@ -14,7 +14,7 @@ export class QueryExporter {
   private exportQueryConfig: QueryExportConfig;
   private queryParser: QueryParser;
   private moduleExporter: ModuleExporter;
-  private logContext: any;
+  private readonly logContext: LogContext;
 
   constructor(managementAPIClient: ContentstackClient, exportQueryConfig: QueryExportConfig) {
     this.exportQueryConfig = exportQueryConfig;

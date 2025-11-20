@@ -1,11 +1,11 @@
 import * as path from 'path';
 import { log } from '@contentstack/cli-utilities';
 import { QueryExportConfig } from '../types';
-import { createLogContext } from './logger';
+import { createLogContext, LogContext } from './logger';
 
 export class ReferencedContentTypesHandler {
   private exportQueryConfig: QueryExportConfig;
-  private logContext: any;
+  private readonly logContext: LogContext;
 
   constructor(exportQueryConfig: QueryExportConfig) {
     this.exportQueryConfig = exportQueryConfig;
