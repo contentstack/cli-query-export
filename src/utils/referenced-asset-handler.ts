@@ -3,12 +3,12 @@ import * as fs from 'fs';
 import { QueryExportConfig } from '../types';
 import { fsUtil } from './index';
 import { sanitizePath, log } from '@contentstack/cli-utilities';
-import { createLogContext } from './logger';
+import { createLogContext, LogContext } from './logger';
 
 export class AssetReferenceHandler {
   private exportQueryConfig: QueryExportConfig;
   private entriesDir: string;
-  private logContext: any;
+  private readonly logContext: LogContext;
 
   constructor(exportQueryConfig: QueryExportConfig) {
     this.exportQueryConfig = exportQueryConfig;

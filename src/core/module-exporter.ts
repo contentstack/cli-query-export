@@ -1,13 +1,13 @@
 import { formatError, log } from '@contentstack/cli-utilities';
 import ExportCommand from '@contentstack/cli-cm-export';
 import { QueryExportConfig, Modules, ExportOptions } from '../types';
-import { createLogContext } from '../utils/logger';
+import { createLogContext, LogContext } from '../utils/logger';
 
 
 export class ModuleExporter {
   private exportQueryConfig: QueryExportConfig;
   private exportedModules: string[] = [];
-  private logContext: any;
+  private readonly logContext: LogContext;
 
   constructor(exportQueryConfig: QueryExportConfig) {
     this.exportQueryConfig = exportQueryConfig;
