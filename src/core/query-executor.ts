@@ -269,7 +269,7 @@ export class QueryExporter {
       await new Promise((resolve) => setTimeout(resolve, delay));
       await this.exportReferencedAssets();
 
-      log.info('Content modules export completed successfully', this.logContext);
+      log.success('Content modules export completed successfully', this.logContext);
     } catch (error) {
       log.error(`Error exporting content modules: ${error.message}`, this.logContext);
       throw error;
