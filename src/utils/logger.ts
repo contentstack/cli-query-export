@@ -174,35 +174,11 @@ export function createLogContext(config: QueryExportConfig): any {
   return {
     command: 'cm:stacks:export-query',
     module: '',
-    userId: configHandler.get('userUid') || '',
     email: configHandler.get('email') || '',
-    sessionId: '',
+    sessionId: configHandler.get('sessionId') || '',
     apiKey: config.stackApiKey || '',
     orgId: configHandler.get('oauthOrgUid') || '',
     authenticationMethod: config.managementToken ? 'Management Token' : 'Basic Auth',
   };
 }
 
-/**
- * Redacts API keys and other sensitive information from message strings
- */
-export function redactSensitiveData(message: string, apiKey?: string): string {
-  if (!message || typeof message !== 'string') {
-    return message;
-  }
-
-  let redactedMessage = message;
-
-  // Redact the provided API key if it exists
-  if (apiKey && apiKey.length > 0) {
-    const escapedApiKey = apiKey.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    const apiKeyRegex = new RegExp(escapedApiKey, 'gi');
-    redactedMessage = redactedMessage.replace(apiKeyRegex, '[REDACTED]');
-  }
-
-  // Redact common API key patterns (blt + 32 hex chars or bltc + 32 hex chars)
-  const apiKeyPattern = /\bbltc?[a-f0-9]{32}\b/gi;
-  redactedMessage = redactedMessage.replace(apiKeyPattern, '[REDACTED]');
-
-  return redactedMessage;
-}
