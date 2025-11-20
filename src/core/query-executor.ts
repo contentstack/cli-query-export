@@ -35,7 +35,7 @@ export class QueryExporter {
     // Step 1: Parse and validate query
     log.debug('Parsing and validating query', this.logContext);
     const parsedQuery = await this.queryParser.parse(this.exportQueryConfig.query);
-    log.info('Query parsed and validated successfully', this.logContext);
+    log.success('Query parsed and validated successfully', this.logContext);
 
     // Step 2: Always export general modules
     await this.exportGeneralModules();
@@ -67,7 +67,7 @@ export class QueryExporter {
     await this.exportContentModules();
     // Step 9: export all other modules
 
-    log.info('Query-based export completed successfully!', this.logContext);
+    log.success('Query-based export completed successfully!', this.logContext);
   }
 
   // export general modules
