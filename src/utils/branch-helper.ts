@@ -35,7 +35,7 @@ export const setupBranches = async (config: QueryExportConfig, stackAPIClient: a
         });
 
       if (result && typeof result === 'object') {
-        log.info(`Branch '${config.branchName}' found`, context);
+        log.success(`Branch '${config.branchName}' found`, context);
       } else {
         throw new Error(`No branch found named ${config.branchName}.`);
       }

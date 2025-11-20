@@ -105,7 +105,7 @@ export default class ExportQueryCommand extends Command {
       await queryExporter.execute();
       log.debug('Query exporter completed successfully', context);
 
-      log.info('Query-based export completed successfully!', context);
+      log.success('Query-based export completed successfully!', context);
       log.info(`Export files saved to: ${this.exportDir}`, context);
     } catch (error) {
       const errorConfig = { exportDir: this.exportDir, stackApiKey: '' } as QueryExportConfig;

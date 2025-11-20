@@ -170,7 +170,7 @@ export class QueryExporter {
       }
 
       fsUtil.writeFile(sanitizePath(contentTypesFilePath), contentTypes);
-      log.info('Referenced content types export completed successfully', this.logContext);
+      log.success('Referenced content types export completed successfully', this.logContext);
     } catch (error) {
       log.error(`Error exporting referenced content types: ${error.message}`, this.logContext);
       throw error;
@@ -249,7 +249,7 @@ export class QueryExporter {
       // export personalize
       await this.moduleExporter.exportModule('personalize');
 
-      log.info('Dependent modules export completed successfully', this.logContext);
+      log.success('Dependent modules export completed successfully', this.logContext);
     } catch (error) {
       log.error(`Error exporting dependent modules: ${error.message}`, this.logContext);
       throw error;
@@ -284,7 +284,7 @@ export class QueryExporter {
       // and export entries for all of them
       await this.moduleExporter.exportModule('entries');
 
-      log.info('Entries export completed successfully', this.logContext);
+      log.success('Entries export completed successfully', this.logContext);
     } catch (error) {
       log.error(`Error exporting entries: ${error.message}`, this.logContext);
       throw error;
@@ -421,7 +421,7 @@ export class QueryExporter {
         fsUtil.removeFile(sanitizePath(tempAssetFilePath));
 
         log.info(`Temporary files cleaned up`, this.logContext);
-        log.info('Referenced assets exported successfully', this.logContext);
+        log.success('Referenced assets exported successfully', this.logContext);
       } else {
         log.info('No referenced assets found in entries', this.logContext);
       }

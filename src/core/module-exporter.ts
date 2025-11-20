@@ -38,7 +38,7 @@ export class ModuleExporter {
       }
 
       // success message
-      log.info(`Successfully exported ${moduleName}`, this.logContext);
+      log.success(`Successfully exported ${moduleName}`, this.logContext);
     } catch (error) {
       log.error(`Failed to export ${moduleName}: ${formatError(error)}`, this.logContext);
       throw error;
