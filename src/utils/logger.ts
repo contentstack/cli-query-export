@@ -183,10 +183,10 @@ export interface LogContext {
 /**
  * Creates a context object for logging from QueryExportConfig
  */
-export function createLogContext(config: QueryExportConfig): LogContext {
+export function createLogContext(config: QueryExportConfig, moduleName?: string): LogContext {
   return {
     command: 'cm:stacks:export-query',
-    module: '',
+    module: moduleName || '',
     email: configHandler.get('email') || '',
     sessionId: configHandler.get('sessionId') || '',
     apiKey: config.stackApiKey || '',

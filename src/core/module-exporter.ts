@@ -16,8 +16,9 @@ export class ModuleExporter {
 
   async exportModule(moduleName: Modules, options: ExportOptions = {}): Promise<void> {
     try {
-      log.info(`Exporting module: ${moduleName}`, this.logContext);
-      log.debug(`Building export command for module: ${moduleName}`, this.logContext);
+      const moduleLogContext = createLogContext(this.exportQueryConfig, moduleName);
+      log.info(`Exporting module: ${moduleName}`, moduleLogContext);
+      log.debug(`Building export command for module: ${moduleName}`, moduleLogContext);
 
       // Build command arguments
       const cmd = this.buildExportCommand(moduleName, options);
@@ -28,7 +29,7 @@ export class ModuleExporter {
 
       // Create export command instance
       await ExportCommand.run(cmd);
-      log.debug(`Export command completed for module: ${moduleName}`, this.logContext);
+      log.debug(`Export command completed for module: ${moduleName}`, moduleLogContext);
 
       // Read the exported data
       // const data = await this.readExportedData(moduleName, options);
@@ -38,9 +39,10 @@ export class ModuleExporter {
       }
 
       // success message
-      log.success(`Successfully exported ${moduleName}`, this.logContext);
+      log.success(`Successfully exported ${moduleName}`, moduleLogContext);
     } catch (error) {
-      log.error(`Failed to export ${moduleName}: ${formatError(error)}`, this.logContext);
+      const moduleLogContext = createLogContext(this.exportQueryConfig, moduleName);
+      log.error(`Failed to export ${moduleName}: ${formatError(error)}`, moduleLogContext);
       throw error;
     }
   }
