@@ -1,4 +1,4 @@
-import { ContentstackClient, sanitizePath, log } from '@contentstack/cli-utilities';
+import { ContentstackClient, sanitizePath, log, formatError } from '@contentstack/cli-utilities';
 import * as path from 'path';
 import { QueryExportConfig, Modules } from '../types';
 import { QueryParser } from '../utils/query-parser';
@@ -169,7 +169,7 @@ export class QueryExporter {
       fsUtil.writeFile(sanitizePath(contentTypesFilePath), contentTypes);
       log.success('Referenced content types export completed successfully', this.exportQueryConfig.context);
     } catch (error) {
-      log.error(`Error exporting referenced content types: ${error.message}`, this.exportQueryConfig.context);
+      log.error(`Error exporting referenced content types: ${formatError(error)}`, this.exportQueryConfig.context);
       throw error;
     }
   }
@@ -248,7 +248,7 @@ export class QueryExporter {
 
       log.success('Dependent modules export completed successfully', this.exportQueryConfig.context);
     } catch (error) {
-      log.error(`Error exporting dependent modules: ${error.message}`, this.exportQueryConfig.context);
+      log.error(`Error exporting dependent modules: ${formatError(error)}`, this.exportQueryConfig.context);
       throw error;
     }
   }
@@ -268,7 +268,7 @@ export class QueryExporter {
 
       log.success('Content modules export completed successfully', this.exportQueryConfig.context);
     } catch (error) {
-      log.error(`Error exporting content modules: ${error.message}`, this.exportQueryConfig.context);
+      log.error(`Error exporting content modules: ${formatError(error)}`, this.exportQueryConfig.context);
       throw error;
     }
   }
@@ -283,7 +283,7 @@ export class QueryExporter {
 
       log.success('Entries export completed successfully', this.exportQueryConfig.context);
     } catch (error) {
-      log.error(`Error exporting entries: ${error.message}`, this.exportQueryConfig.context);
+      log.error(`Error exporting entries: ${formatError(error)}`, this.exportQueryConfig.context);
       throw error;
     }
   }
@@ -423,7 +423,7 @@ export class QueryExporter {
         log.info('No referenced assets found in entries', this.exportQueryConfig.context);
       }
     } catch (error) {
-      log.error(`Error exporting referenced assets: ${error.message}`, this.exportQueryConfig.context);
+      log.error(`Error exporting referenced assets: ${formatError(error)}`, this.exportQueryConfig.context);
       throw error;
     }
   }

@@ -1,5 +1,5 @@
 
-import { getBranchFromAlias, log } from '@contentstack/cli-utilities';
+import { getBranchFromAlias, log, formatError } from '@contentstack/cli-utilities';
 import { QueryExportConfig } from '../types';
 import { createLogContext } from './logger';
 
@@ -29,8 +29,8 @@ export const setupBranches = async (config: QueryExportConfig, stackAPIClient: a
       const result = await stackAPIClient
         .branch(config.branchName)
         .fetch()
-        .catch((err: Error): any => {
-          log.error(`Error fetching branch: ${err.message}`, context);
+        .catch((err: unknown): any => {
+          log.error(`Error fetching branch: ${formatError(err)}`, context);
           return null;
         });
 
@@ -63,7 +63,7 @@ export const setupBranches = async (config: QueryExportConfig, stackAPIClient: a
     }
     config.branchEnabled = true;
   } catch (error) {
-    log.error(`Error setting up branches: ${error.message}`, context);
+    log.error(`Error setting up branches: ${formatError(error)}`, context);
     throw error;
   }
 };
