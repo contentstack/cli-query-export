@@ -3,16 +3,13 @@ import * as fs from 'fs';
 import { QueryExportConfig } from '../types';
 import { fsUtil } from './index';
 import { sanitizePath, log } from '@contentstack/cli-utilities';
-import { createLogContext, LogContext } from './logger';
 
 export class AssetReferenceHandler {
   private exportQueryConfig: QueryExportConfig;
   private entriesDir: string;
-  private readonly logContext: LogContext;
 
   constructor(exportQueryConfig: QueryExportConfig) {
     this.exportQueryConfig = exportQueryConfig;
-    this.logContext = createLogContext(exportQueryConfig);
     this.entriesDir = path.join(
       sanitizePath(exportQueryConfig.exportDir),
       sanitizePath(exportQueryConfig.branchName || ''),
@@ -24,11 +21,11 @@ export class AssetReferenceHandler {
    * Extract all asset UIDs by processing entries file by file (memory efficient)
    */
   extractReferencedAssets(): string[] {
-    log.info('Extracting referenced assets from entries...', this.logContext);
+    log.info('Extracting referenced assets from entries...', this.exportQueryConfig.context);
 
     try {
       if (!fs.existsSync(this.entriesDir)) {
-        log.warn('Entries directory does not exist', this.logContext);
+        log.warn('Entries directory does not exist', this.exportQueryConfig.context);
         return [];
       }
 
@@ -48,12 +45,12 @@ export class AssetReferenceHandler {
       const result = Array.from(globalAssetUIDs);
       log.info(
         `Found ${result.length} unique asset UIDs from ${totalEntriesProcessed} entries across ${jsonFiles.length} files`,
-        this.logContext,
+        this.exportQueryConfig.context,
       );
 
       return result;
     } catch (error) {
-      log.error(`Failed to extract assets: ${error.message}`, this.logContext);
+      log.error(`Failed to extract assets: ${error.message}`, this.exportQueryConfig.context);
       return [];
     }
   }
@@ -85,11 +82,11 @@ export class AssetReferenceHandler {
 
       // Count entries for logging
       const entriesCount = Object.keys(fileContent).length;
-      log.debug(`Processed ${entriesCount} entries from ${path.basename(filePath)}`, this.logContext);
+      log.debug(`Processed ${entriesCount} entries from ${path.basename(filePath)}`, this.exportQueryConfig.context);
 
       return entriesCount;
     } catch (error) {
-      log.warn(`Failed to process file ${filePath}: ${error.message}`, this.logContext);
+      log.warn(`Failed to process file ${filePath}: ${error.message}`, this.exportQueryConfig.context);
       return 0;
     }
   }
@@ -152,7 +149,7 @@ export class AssetReferenceHandler {
         }
       }
     } catch (error) {
-      log.warn( `Failed to read directory ${dir}: ${error.message}`, this.logContext);
+      log.warn( `Failed to read directory ${dir}: ${error.message}`, this.exportQueryConfig.context);
     }
 
     return jsonFiles;

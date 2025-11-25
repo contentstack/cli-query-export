@@ -1,22 +1,19 @@
 import { formatError, log } from '@contentstack/cli-utilities';
 import ExportCommand from '@contentstack/cli-cm-export';
 import { QueryExportConfig, Modules, ExportOptions } from '../types';
-import { createLogContext, LogContext } from '../utils/logger';
 
 
 export class ModuleExporter {
   private exportQueryConfig: QueryExportConfig;
   private exportedModules: string[] = [];
-  private readonly logContext: LogContext;
 
   constructor(exportQueryConfig: QueryExportConfig) {
     this.exportQueryConfig = exportQueryConfig;
-    this.logContext = createLogContext(exportQueryConfig);
   }
 
   async exportModule(moduleName: Modules, options: ExportOptions = {}): Promise<void> {
     try {
-      const moduleLogContext = createLogContext(this.exportQueryConfig, moduleName);
+      const moduleLogContext = { ...this.exportQueryConfig.context, module: moduleName };
       log.info(`Exporting module: ${moduleName}`, moduleLogContext);
       log.debug(`Building export command for module: ${moduleName}`, moduleLogContext);
 
@@ -41,7 +38,7 @@ export class ModuleExporter {
       // success message
       log.success(`Successfully exported ${moduleName}`, moduleLogContext);
     } catch (error) {
-      const moduleLogContext = createLogContext(this.exportQueryConfig, moduleName);
+      const moduleLogContext = { ...this.exportQueryConfig.context, module: moduleName };
       log.error(`Failed to export ${moduleName}: ${formatError(error)}`, moduleLogContext);
       throw error;
     }
