@@ -1,7 +1,7 @@
 import * as path from 'path';
 import { QueryExportConfig } from '../types';
 import { fsUtil } from './index';
-import { ContentstackClient, sanitizePath, log, formatError } from '@contentstack/cli-utilities';
+import { ContentstackClient, sanitizePath, log, formatError, handleAndLogError } from '@contentstack/cli-utilities';
 
 export class ContentTypeDependenciesHandler {
   private exportQueryConfig: QueryExportConfig;
@@ -67,7 +67,7 @@ export class ContentTypeDependenciesHandler {
           this.exportQueryConfig.context,
         );
       } catch (error) {
-        log.error(`Failed to separate extensions and Marketplace apps: ${formatError(error)}`, this.exportQueryConfig.context);
+        handleAndLogError(error, this.exportQueryConfig.context, 'Failed to separate extensions and Marketplace apps');
         // Keep original extensions if separation fails
       }
     } else {
@@ -125,7 +125,7 @@ export class ContentTypeDependenciesHandler {
 
       return { extensions: regularExtensions, marketplaceApps };
     } catch (error) {
-      log.error(`Failed to fetch extensions and Marketplace apps: ${formatError(error)}`, this.exportQueryConfig.context);
+      handleAndLogError(error, this.exportQueryConfig.context, 'Failed to fetch extensions and Marketplace apps');
       return { extensions: extensionUIDs, marketplaceApps: [] };
     }
   }

@@ -1,4 +1,4 @@
-import { formatError, log } from '@contentstack/cli-utilities';
+import { log, handleAndLogError } from '@contentstack/cli-utilities';
 import ExportCommand from '@contentstack/cli-cm-export';
 import { QueryExportConfig, Modules, ExportOptions } from '../types';
 
@@ -39,7 +39,7 @@ export class ModuleExporter {
       log.success(`Successfully exported ${moduleName}`, moduleLogContext);
     } catch (error) {
       const moduleLogContext = { ...this.exportQueryConfig.context, module: moduleName };
-      log.error(`Failed to export ${moduleName}: ${formatError(error)}`, moduleLogContext);
+      handleAndLogError(error, moduleLogContext, `Failed to export ${moduleName}`);
       throw error;
     }
   }
