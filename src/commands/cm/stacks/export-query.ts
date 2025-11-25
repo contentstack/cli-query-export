@@ -3,10 +3,10 @@ import {
   flags,
   FlagInput,
   sanitizePath,
-  formatError,
   managementSDKClient,
   ContentstackClient,
   log,
+  handleAndLogError,
 } from '@contentstack/cli-utilities';
 import { QueryExporter } from '../../../core/query-executor';
 import { QueryExportConfig } from '../../../types';
@@ -83,8 +83,8 @@ export default class ExportQueryCommand extends Command {
       }
 
       this.exportDir = sanitizePath(exportQueryConfig.exportDir);
-      const context = createLogContext(exportQueryConfig);
-      log.debug('Export configuration setup completed', context);
+      exportQueryConfig.context = createLogContext(exportQueryConfig);
+      log.debug('Export configuration setup completed', exportQueryConfig.context);
 
       // Initialize management API client
       const managementAPIClient: ContentstackClient = await managementSDKClient(exportQueryConfig);
@@ -97,21 +97,18 @@ export default class ExportQueryCommand extends Command {
 
       // Setup branches (validate branch or set default to 'main')
       await setupBranches(exportQueryConfig, stackAPIClient);
-      log.debug('Branch configuration setup completed', context);
+      log.debug('Branch configuration setup completed', exportQueryConfig.context);
 
       // Initialize and run query export
-      log.debug('Starting query exporter', context);
+      log.debug('Starting query exporter', exportQueryConfig.context);
       const queryExporter = new QueryExporter(managementAPIClient, exportQueryConfig);
       await queryExporter.execute();
-      log.debug('Query exporter completed successfully', context);
+      log.debug('Query exporter completed successfully', exportQueryConfig.context);
 
-      log.success('Query-based export completed successfully!', context);
-      log.info(`Export files saved to: ${this.exportDir}`, context);
+      log.success('Query-based export completed successfully!', exportQueryConfig.context);
+      log.info(`Export files saved to: ${this.exportDir}`, exportQueryConfig.context);
     } catch (error) {
-      const errorConfig = { exportDir: this.exportDir, stackApiKey: '' } as QueryExportConfig;
-      const errorContext = createLogContext(errorConfig);
-      log.error(`Export failed: ${formatError(error)}`, errorContext);
-      throw error;
+      handleAndLogError(error);
     }
   }
 }

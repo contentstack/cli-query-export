@@ -189,6 +189,7 @@ export interface QueryExportConfig extends DefaultConfig {
   batchDelayMs?: number;
   assetBatchSize?: number;
   assetBatchDelayMs?: number;
+  context?: any; // Log context for centralized logging
 }
 
 export interface QueryMetadata {

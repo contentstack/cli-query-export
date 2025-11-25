@@ -2,17 +2,14 @@ import * as path from 'path';
 import { QueryExportConfig } from '../types';
 import { fsUtil } from './index';
 import { ContentstackClient, sanitizePath, log } from '@contentstack/cli-utilities';
-import { createLogContext, LogContext } from './logger';
 
 export class ContentTypeDependenciesHandler {
   private exportQueryConfig: QueryExportConfig;
   private stackAPIClient: ReturnType<ContentstackClient['stack']>;
-  private readonly logContext: LogContext;
 
   constructor(stackAPIClient: any, exportQueryConfig: QueryExportConfig) {
     this.exportQueryConfig = exportQueryConfig;
     this.stackAPIClient = stackAPIClient;
-    this.logContext = createLogContext(exportQueryConfig);
   }
 
   async extractDependencies(): Promise<{
@@ -29,7 +26,7 @@ export class ContentTypeDependenciesHandler {
     );
     const allContentTypes = (fsUtil.readFile(sanitizePath(contentTypesFilePath)) as any[]) || [];
     if (allContentTypes.length === 0) {
-      log.info('No content types found, skipping dependency extraction', this.logContext);
+      log.info('No content types found, skipping dependency extraction', this.exportQueryConfig.context);
       return {
         globalFields: new Set<string>(),
         extensions: new Set<string>(),
@@ -38,7 +35,7 @@ export class ContentTypeDependenciesHandler {
       };
     }
 
-    log.info(`Extracting dependencies from ${allContentTypes.length} content types`, this.logContext);
+    log.info(`Extracting dependencies from ${allContentTypes.length} content types`, this.exportQueryConfig.context);
 
     const dependencies = {
       globalFields: new Set<string>(),
@@ -58,7 +55,7 @@ export class ContentTypeDependenciesHandler {
       const extensionUIDs = Array.from(dependencies.extensions);
       log.info(
         `Processing ${extensionUIDs.length} extensions to identify marketplace apps...`,
-        this.logContext,
+        this.exportQueryConfig.context,
       );
 
       try {
@@ -67,16 +64,16 @@ export class ContentTypeDependenciesHandler {
         dependencies.marketplaceApps = new Set(marketplaceApps);
         log.info(
           `Dependencies separated - Global Fields: ${dependencies.globalFields.size}, Extensions: ${dependencies.extensions.size}, Taxonomies: ${dependencies.taxonomies.size}, Marketplace Apps: ${dependencies.marketplaceApps.size}`,
-          this.logContext,
+          this.exportQueryConfig.context,
         );
       } catch (error) {
-        log.error(`Failed to separate extensions and Marketplace apps: ${error.message}`, this.logContext);
+        log.error(`Failed to separate extensions and Marketplace apps: ${error.message}`, this.exportQueryConfig.context);
         // Keep original extensions if separation fails
       }
     } else {
       log.info(
         `Found dependencies - Global Fields: ${dependencies.globalFields.size}, Extensions: ${dependencies.extensions.size}, Taxonomies: ${dependencies.taxonomies.size}, Marketplace Apps: ${dependencies.marketplaceApps.size}`,
-        this.logContext,
+        this.exportQueryConfig.context,
       );
     }
 
@@ -89,7 +86,7 @@ export class ContentTypeDependenciesHandler {
   ): Promise<{ extensions: string[]; marketplaceApps: string[] }> {
     log.info(
       `Fetching details for ${extensionUIDs.length} extensions to identify marketplace apps...`,
-      this.logContext,
+      this.exportQueryConfig.context,
     );
 
     try {
@@ -106,7 +103,7 @@ export class ContentTypeDependenciesHandler {
       const response = await this.stackAPIClient.extension().query(queryParams).find();
 
       if (!response || !response.items) {
-        log.warn(`No extensions found`, this.logContext);
+        log.warn(`No extensions found`, this.exportQueryConfig.context);
         return { extensions: extensionUIDs, marketplaceApps: [] };
       }
 
@@ -123,12 +120,12 @@ export class ContentTypeDependenciesHandler {
 
       log.info(
         `Identified ${marketplaceApps.length} marketplace apps and ${regularExtensions.length} regular extensions from ${extensionUIDs.length} total extensions`,
-        this.logContext,
+        this.exportQueryConfig.context,
       );
 
       return { extensions: regularExtensions, marketplaceApps };
     } catch (error) {
-      log.error(`Failed to fetch extensions and Marketplace apps: ${error.message}`, this.logContext);
+      log.error(`Failed to fetch extensions and Marketplace apps: ${error.message}`, this.exportQueryConfig.context);
       return { extensions: extensionUIDs, marketplaceApps: [] };
     }
   }
