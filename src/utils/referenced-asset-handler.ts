@@ -2,7 +2,7 @@ import * as path from 'path';
 import * as fs from 'fs';
 import { QueryExportConfig } from '../types';
 import { fsUtil } from './index';
-import { sanitizePath, log } from '@contentstack/cli-utilities';
+import { sanitizePath, log, formatError } from '@contentstack/cli-utilities';
 
 export class AssetReferenceHandler {
   private exportQueryConfig: QueryExportConfig;
@@ -50,8 +50,8 @@ export class AssetReferenceHandler {
 
       return result;
     } catch (error) {
-      log.error(`Failed to extract assets: ${error.message}`, this.exportQueryConfig.context);
-      return [];
+      log.error(`Failed to extract assets: ${formatError(error)}`, this.exportQueryConfig.context);
+      throw error;
     }
   }
 
@@ -86,7 +86,7 @@ export class AssetReferenceHandler {
 
       return entriesCount;
     } catch (error) {
-      log.warn(`Failed to process file ${filePath}: ${error.message}`, this.exportQueryConfig.context);
+      log.warn(`Failed to process file ${filePath}: ${formatError(error)}`, this.exportQueryConfig.context);
       return 0;
     }
   }
@@ -149,7 +149,7 @@ export class AssetReferenceHandler {
         }
       }
     } catch (error) {
-      log.warn( `Failed to read directory ${dir}: ${error.message}`, this.exportQueryConfig.context);
+      log.warn(`Failed to read directory ${dir}: ${formatError(error)}`, this.exportQueryConfig.context);
     }
 
     return jsonFiles;
