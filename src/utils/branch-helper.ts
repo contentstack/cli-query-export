@@ -1,5 +1,5 @@
 
-import { getBranchFromAlias, log, formatError } from '@contentstack/cli-utilities';
+import { getBranchFromAlias, log, formatError, handleAndLogError } from '@contentstack/cli-utilities';
 import { QueryExportConfig } from '../types';
 import { createLogContext } from './logger';
 
@@ -63,7 +63,7 @@ export const setupBranches = async (config: QueryExportConfig, stackAPIClient: a
     }
     config.branchEnabled = true;
   } catch (error) {
-    log.error(`Error setting up branches: ${formatError(error)}`, context);
+    handleAndLogError(error, context as any, 'Error setting up branches');
     throw error;
   }
 };
