@@ -83,6 +83,7 @@ export default class ExportQueryCommand extends Command {
       }
 
       this.exportDir = sanitizePath(exportQueryConfig.exportDir);
+      // Create base context without module name - module field is set dynamically during each module export
       exportQueryConfig.context = createLogContext(exportQueryConfig);
       log.debug('Export configuration setup completed', exportQueryConfig.context);
 

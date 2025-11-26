@@ -7,7 +7,7 @@
 import * as winston from 'winston';
 import * as path from 'path';
 import mkdirp from 'mkdirp';
-import { QueryExportConfig } from '../types';
+import { QueryExportConfig, LogContext } from '../types';
 import { sanitizePath, redactObject, configHandler } from '@contentstack/cli-utilities';
 const slice = Array.prototype.slice;
 
@@ -166,19 +166,6 @@ export const unlinkFileLogger = () => {
     });
   }
 };
-
-/**
- * Log context interface for centralized logging
- */
-export interface LogContext {
-  command: string;
-  module: string;
-  email: string;
-  sessionId: string;
-  apiKey: string;
-  orgId: string;
-  authenticationMethod: string;
-}
 
 /**
  * Creates a context object for logging from QueryExportConfig

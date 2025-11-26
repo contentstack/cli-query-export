@@ -51,7 +51,7 @@ export class AssetReferenceHandler {
       return result;
     } catch (error) {
       handleAndLogError(error, this.exportQueryConfig.context, 'Failed to extract assets');
-      throw error;
+      return [];
     }
   }
 

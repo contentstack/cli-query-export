@@ -1,7 +1,6 @@
 
-import { getBranchFromAlias, log, formatError, handleAndLogError } from '@contentstack/cli-utilities';
+import { getBranchFromAlias, log, handleAndLogError } from '@contentstack/cli-utilities';
 import { QueryExportConfig } from '../types';
-import { createLogContext } from './logger';
 
 /**
  * Validates and sets up branch configuration for the stack
@@ -15,7 +14,7 @@ export const setupBranches = async (config: QueryExportConfig, stackAPIClient: a
     throw new Error('The branch configuration is invalid.');
   }
 
-  const context = createLogContext(config);
+  const context = config.context;
 
   try {
     if (config.branchAlias) {
@@ -30,7 +29,7 @@ export const setupBranches = async (config: QueryExportConfig, stackAPIClient: a
         .branch(config.branchName)
         .fetch()
         .catch((err: unknown): any => {
-          log.error(`Error fetching branch: ${formatError(err)}`, context);
+          handleAndLogError(err, context, 'Error fetching branch');
           return null;
         });
 
@@ -63,7 +62,7 @@ export const setupBranches = async (config: QueryExportConfig, stackAPIClient: a
     }
     config.branchEnabled = true;
   } catch (error) {
-    handleAndLogError(error, context as any, 'Error setting up branches');
+    handleAndLogError(error, context, 'Error setting up branches');
     throw error;
   }
 };
