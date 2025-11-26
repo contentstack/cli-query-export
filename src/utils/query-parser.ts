@@ -1,5 +1,5 @@
 import * as fs from 'fs';
-import { CLIError, formatError } from '@contentstack/cli-utilities';
+import { CLIError, handleAndLogError } from '@contentstack/cli-utilities';
 import { QueryExportConfig } from '../types';
 
 export class QueryParser {
@@ -28,7 +28,7 @@ export class QueryParser {
       const content = fs.readFileSync(filePath, 'utf-8');
       return JSON.parse(content);
     } catch (error) {
-      throw new CLIError(`Failed to parse the query file: ${formatError(error)}`);
+      handleAndLogError(error, this.config.context, 'Failed to parse the query file');
     }
   }
 
@@ -36,7 +36,7 @@ export class QueryParser {
     try {
       return JSON.parse(queryString);
     } catch (error) {
-      throw new CLIError(`Invalid JSON query: ${formatError(error)}`);
+      handleAndLogError(error, this.config.context, 'Invalid JSON query');
     }
   }
 
