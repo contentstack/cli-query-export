@@ -1,6 +1,6 @@
 import * as path from 'path';
+import { log } from '@contentstack/cli-utilities';
 import { QueryExportConfig } from '../types';
-import { log } from './logger';
 
 export class ReferencedContentTypesHandler {
   private exportQueryConfig: QueryExportConfig;
@@ -16,7 +16,7 @@ export class ReferencedContentTypesHandler {
   async extractReferencedContentTypes(contentTypeBatch: any[]): Promise<string[]> {
     const allReferencedTypes: Set<string> = new Set();
 
-    log(this.exportQueryConfig, `Extracting references from ${contentTypeBatch.length} content types`, 'info');
+    log.info(`Extracting references from ${contentTypeBatch.length} content types`, this.exportQueryConfig.context);
 
     for (const contentType of contentTypeBatch) {
       if (contentType.schema) {
@@ -26,7 +26,7 @@ export class ReferencedContentTypesHandler {
     }
 
     const result = Array.from(allReferencedTypes);
-    log(this.exportQueryConfig, `Found ${result.length} referenced content types`, 'info');
+    log.info(`Found ${result.length} referenced content types`, this.exportQueryConfig.context);
     return result;
   }
 
