@@ -7,8 +7,8 @@
 import * as winston from 'winston';
 import * as path from 'path';
 import mkdirp from 'mkdirp';
-import { QueryExportConfig } from '../types';
-import { sanitizePath, redactObject } from '@contentstack/cli-utilities';
+import { QueryExportConfig, LogContext } from '../types';
+import { sanitizePath, redactObject, configHandler } from '@contentstack/cli-utilities';
 const slice = Array.prototype.slice;
 
 const ansiRegexPattern = [
@@ -166,3 +166,19 @@ export const unlinkFileLogger = () => {
     });
   }
 };
+
+/**
+ * Creates a context object for logging from QueryExportConfig
+ */
+export function createLogContext(config: QueryExportConfig, moduleName?: string): LogContext {
+  return {
+    command: 'cm:stacks:export-query',
+    module: moduleName || '',
+    email: configHandler.get('email') || '',
+    sessionId: configHandler.get('sessionId') || '',
+    apiKey: config.stackApiKey || '',
+    orgId: configHandler.get('oauthOrgUid') || '',
+    authenticationMethod: config.managementToken ? 'Management Token' : 'Basic Auth',
+  };
+}
+
