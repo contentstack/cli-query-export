@@ -1,7 +1,6 @@
 
-import { getBranchFromAlias} from '@contentstack/cli-utilities';
+import { getBranchFromAlias, log, handleAndLogError } from '@contentstack/cli-utilities';
 import { QueryExportConfig } from '../types';
-import { log } from './logger';
 
 /**
  * Validates and sets up branch configuration for the stack
@@ -15,6 +14,8 @@ export const setupBranches = async (config: QueryExportConfig, stackAPIClient: a
     throw new Error('The branch configuration is invalid.');
   }
 
+  const context = config.context;
+
   try {
     if (config.branchAlias) {
       config.branchName = await getBranchFromAlias(stackAPIClient, config.branchAlias);
@@ -22,31 +23,31 @@ export const setupBranches = async (config: QueryExportConfig, stackAPIClient: a
     }
     if (config.branchName) {
       // Check if the specified branch exists
-      log(config, `Validating branch: ${config.branchName}`, 'info');
+      log.info(`Validating branch: ${config.branchName}`, context);
 
       const result = await stackAPIClient
         .branch(config.branchName)
         .fetch()
-        .catch((err: Error): any => {
-          log(config, `Error fetching branch: ${err.message}`, 'error');
+        .catch((err: unknown): any => {
+          handleAndLogError(err, context, 'Error fetching branch');
           return null;
         });
 
       if (result && typeof result === 'object') {
-        log(config, `Branch '${config.branchName}' found`, 'success');
+        log.success(`Branch '${config.branchName}' found`, context);
       } else {
         throw new Error(`No branch found named ${config.branchName}.`);
       }
     } else {
       // If no branch name provided, check if the stack has branches
-      log(config, 'No branch specified, checking if stack has branches', 'info');
+      log.info('No branch specified, checking if stack has branches', context);
 
       const result = await stackAPIClient
         .branch()
         .query()
         .find()
         .catch((): any => {
-          log(config, 'Stack does not have branches', 'info');
+          log.info('Stack does not have branches', context);
           return null;
         });
 
@@ -55,13 +56,13 @@ export const setupBranches = async (config: QueryExportConfig, stackAPIClient: a
         config.branchName = 'main';
       } else {
         // Stack doesn't have branches
-        log(config, 'Stack does not have branches', 'info');
+        log.info('Stack does not have branches', context);
         return;
       }
     }
     config.branchEnabled = true;
   } catch (error) {
-    log(config, `Error setting up branches: ${error.message}`, 'error');
+    handleAndLogError(error, context, 'Error setting up branches');
     throw error;
   }
 };
