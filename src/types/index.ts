@@ -174,6 +174,20 @@ export interface DefaultConfig {
   maxCTReferenceDepth: number;
 }
 
+/**
+ * Log context interface for centralized logging
+ */
+export interface LogContext {
+  command: string;
+  module: string;
+  email: string;
+  sessionId: string;
+  apiKey: string;
+  orgId: string;
+  authenticationMethod: string;
+  [key: string]: unknown;
+}
+
 export interface QueryExportConfig extends DefaultConfig {
   query: string;
   skipReferences: boolean;
@@ -189,6 +203,7 @@ export interface QueryExportConfig extends DefaultConfig {
   batchDelayMs?: number;
   assetBatchSize?: number;
   assetBatchDelayMs?: number;
+  context?: LogContext; // Log context for centralized logging
 }
 
 export interface QueryMetadata {
