@@ -3,4 +3,8 @@ fileignoreconfig:
     checksum: 3d0b5cf07f5a87256f132f85a5556d193ce5a1fa6d92df2c7c50514071d592b7
   - filename: package-lock.json
     checksum: b25e67de468beac1b821d257a372fdf56c54e045626b762ba29e6b86381b3ab6
+  - filename: src/types/index.ts
+    checksum: 8d3021c2690dbceeb5a97e449262834b8177f2a4a674fe13ac33d71b890ab8fd
+  - filename: src/utils/logger.ts
+    checksum: c5baa97b996aaeaa0eb2c4d40d71bd67047fc85281449278f3d9058433dcb4ab
 version: '1.0'
