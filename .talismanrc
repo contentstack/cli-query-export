@@ -2,9 +2,9 @@ fileignoreconfig:
   - filename: src/core/query-executor.ts
     checksum: 3d0b5cf07f5a87256f132f85a5556d193ce5a1fa6d92df2c7c50514071d592b7
   - filename: package-lock.json
-    checksum: 37a33f085b6df7ee03b326885bc38957b84fdb17984a3b03de04fd6921b42fee
-  - filename: src/commands/cm/stacks/export-query.ts
-    checksum: 62e15b1a2705c49ec7abfafa65e04654fdf5025361dd3485b2b9a78be70af1f6
+    checksum: b25e67de468beac1b821d257a372fdf56c54e045626b762ba29e6b86381b3ab6
+  - filename: src/types/index.ts
+    checksum: 8d3021c2690dbceeb5a97e449262834b8177f2a4a674fe13ac33d71b890ab8fd
   - filename: src/utils/logger.ts
-    checksum: 01a252f8f650b171f93a63ae241edd50352fde5e1e6ad5fca07c2390b38975f8
+    checksum: c5baa97b996aaeaa0eb2c4d40d71bd67047fc85281449278f3d9058433dcb4ab
 version: '1.0'
