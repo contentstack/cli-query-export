@@ -1,0 +1,66 @@
+---
+description: "Testing patterns and TDD workflow"
+globs: ["**/__tests__/**/*.ts", "**/*.spec.ts", "**/*.test.ts"]
+alwaysApply: true
+---
+
+# Testing Standards
+
+## TDD workflow
+1. For behavior changes, prefer a failing test first
+2. Minimal code to pass
+3. Refactor while keeping tests green
+
+Pure refactors and docs-only changes may skip new tests when behavior is unchanged.
+
+## Coverage
+- **~80%** (lines, branches, functions) is an **aspirational** goal, not enforced as a hard gate here
+- Test both success and failure paths
+- Mock all external dependencies
+
+## Test Patterns
+```typescript
+// ✅ GOOD - Simple test structure
+describe('[ComponentName]', () => {
+  beforeEach(() => {
+    // Setup mocks and test data
+    sinon.stub(ExternalService.prototype, 'method').resolves(mockData);
+  });
+
+  afterEach(() => {
+    sinon.restore();
+  });
+
+  it('should [expected behavior] when [condition]', () => {
+    // Arrange
+    const input = { /* test data */ };
+    
+    // Act
+    const result = component.method(input);
+    
+    // Assert
+    expect(result).to.equal(expectedOutput);
+  });
+});
+```
+
+## Mocking Standards
+- Use sinon for API response mocking
+- Never make real API calls in tests
+- Mock at module boundaries (SDK clients, `fsUtil`, etc.), not irrelevant internals
+
+## Layout
+
+- Unit tests live under **`test/unit/**/*.test.ts`** (Mocha).
+
+## Common mock patterns
+```typescript
+// Mock external API
+sinon.stub(HttpClient.prototype, 'request').resolves(mockResponse);
+
+// Mock file operations
+sinon.stub(fs, 'readFile').resolves(mockFileContent);
+
+// Mock rate limiter
+sinon.stub(RateLimiter.prototype, 'wait').resolves();
+```
