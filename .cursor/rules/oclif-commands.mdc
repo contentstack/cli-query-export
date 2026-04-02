@@ -1,0 +1,45 @@
+---
+description: "OCLIF / Contentstack command patterns for this plugin"
+globs: ["**/commands/**/*.ts"]
+alwaysApply: false
+---
+
+# Command standards (`export-query`)
+
+This plugin uses **`Command`** from **`@contentstack/cli-command`** and **`flags` / `FlagInput`** from **`@contentstack/cli-utilities`** (not `@oclif/core` `Flags` directly). Follow **`src/commands/cm/stacks/export-query.ts`** as the source of truth.
+
+## Structure
+
+```typescript
+import { Command } from '@contentstack/cli-command';
+import { flags, FlagInput, managementSDKClient, log, handleAndLogError } from '@contentstack/cli-utilities';
+import { QueryExporter } from '../../../core/query-executor';
+
+export default class ExportQueryCommand extends Command {
+  static description = 'Export content from a stack using query-based filtering';
+  static examples = ['csdx cm:stacks:export-query --query \'{"modules":{...}}\''];
+
+  static flags: FlagInput = {
+    query: flags.string({ required: true, description: 'Query as JSON string or file path' }),
+  };
+
+  async run(): Promise<void> {
+    const { flags } = await this.parse(ExportQueryCommand);
+    // Build config via src/utils (e.g. setupQueryExportConfig), then:
+    const exporter = new QueryExporter(client, exportQueryConfig);
+    await exporter.execute();
+  }
+}
+```
+
+## Practices
+
+- **Validate early**: required `query`; ensure stack auth is present before calling the API.
+- **Delegate**: keep parsing, paths, and SDK wiring out of `QueryExporter` where helpers already exist under **`src/utils/`**.
+- **User feedback**: prefer **`log`** from **`@contentstack/cli-utilities`** with export context.
+- **Errors**: use **`handleAndLogError`** and/or command error UX consistent with other Contentstack CLI plugins.
+
+## Flags
+
+- Define flags with **`flags.string`**, **`flags.boolean`**, etc., and **`FlagInput`** typing for the static `flags` object.
+- Use **`exclusive`** on mutually exclusive options (see branch vs branch-alias in `export-query.ts`).
