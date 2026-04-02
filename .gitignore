@@ -17,3 +17,4 @@ contents/
 logs/
 oclif.manifest.json
 talisman_output.log
+snyk_output.log
