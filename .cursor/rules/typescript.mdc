@@ -1,0 +1,49 @@
+---
+description: "TypeScript strict mode standards and naming conventions"
+globs: ["**/*.ts", "**/*.tsx"]
+alwaysApply: false
+---
+
+# TypeScript Standards
+
+## Strict Mode Requirements
+- Explicit return types for all functions
+- No `any` type usage
+- Strict null checks enabled
+- No unused variables or imports
+
+## Naming Conventions
+- **Files**: kebab-case.ts
+- **Classes**: PascalCase
+- **Functions/Variables**: camelCase
+- **Constants**: SCREAMING_SNAKE_CASE
+- **Interfaces**: PascalCase (no I prefix)
+- **Types**: PascalCase
+
+## Code Examples
+```typescript
+// ✅ GOOD - Explicit types and proper naming
+export class UserService {
+  async fetchUser(userId: string): Promise<User> {
+    const user = await this.client.getUser(userId);
+    return user;
+  }
+}
+
+// ❌ BAD - Implicit any, poor naming
+export class userservice {
+  async fetchUser(id) {
+    return await this.client.getUser(id);
+  }
+}
+```
+
+## Import Organization
+1. Node.js built-ins
+2. External libraries
+3. Internal modules (relative imports last)
+
+## Error Handling
+- Use custom error classes
+- Include error context and cause
+- Never swallow errors silently
