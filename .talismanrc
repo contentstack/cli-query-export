@@ -1,10 +1,14 @@
 fileignoreconfig:
-  - filename: src/core/query-executor.ts
-    checksum: 3d0b5cf07f5a87256f132f85a5556d193ce5a1fa6d92df2c7c50514071d592b7
+  - filename: skills/code-review/SKILL.md
+    checksum: 8c0c5c1a18ba08aa0c048d261f1ca81c152def23745fd74b531b75a23a5ac969
+  - filename: skills/framework/SKILL.md
+    checksum: 5674849276e2087f6361decb2c7e427f451ec7799538fa2eb697b0a8b7b92f44
+  - filename: .cursor/rules/contentstack-cli.mdc
+    checksum: 11bf8883f584b900ce1cde336057391717b47eb5a304cb46c5660bb3185cef2f
+  - filename: skills/code-review/references/code-review-checklist.md
+    checksum: 6e65ad06469083ed0196edaf8bd2d4478800493b32535be7c98e436082fba44a
+  - filename: skills/framework/references/framework-patterns.md
+    checksum: cae3858eea36c1f716ebe4a9679fc3d4eee628cb244cf4fc0a6eccbd8cecb36d
   - filename: package-lock.json
-    checksum: 216c297102d8f30ebed4a942e24d27f94f714ef9e32a932474e85127fb7cc435
-  - filename: src/types/index.ts
-    checksum: 8d3021c2690dbceeb5a97e449262834b8177f2a4a674fe13ac33d71b890ab8fd
-  - filename: src/utils/logger.ts
-    checksum: c5baa97b996aaeaa0eb2c4d40d71bd67047fc85281449278f3d9058433dcb4ab
+    checksum: 9b73c1e977f09964843bd5f7529ca8decb7e8b5ab462a4e9ab167ff2a05df53f
 version: '1.0'
