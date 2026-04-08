@@ -10,5 +10,5 @@ fileignoreconfig:
   - filename: skills/framework/references/framework-patterns.md
     checksum: cae3858eea36c1f716ebe4a9679fc3d4eee628cb244cf4fc0a6eccbd8cecb36d
   - filename: package-lock.json
-    checksum: 9b73c1e977f09964843bd5f7529ca8decb7e8b5ab462a4e9ab167ff2a05df53f
+    checksum: 459bff7a9ebcc605fa897611c89b63be3ac5ad784a976695e7ba1eb8068e1d71
 version: '1.0'
