@@ -152,7 +152,7 @@ export class ContentTypeDependenciesHandler {
       }
 
       // Recursive traversal for nested structures
-      if (field.data_type === 'group' && field.schema) {
+      if ((field.data_type === 'group' || field.data_type === 'global_field') && field.schema) {
         this.traverseSchemaForDependencies(field.schema, dependencies);
       }
 

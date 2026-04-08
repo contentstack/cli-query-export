@@ -368,5 +368,133 @@ describe('Dependency Resolver Utilities', () => {
       expect(dependencies.extensions.size).to.equal(0);
       expect(dependencies.taxonomies.size).to.equal(0);
     });
+
+    it('should collect nested global field inside a global field schema', () => {
+      const schema = [
+        {
+          uid: 'outer_global',
+          data_type: 'global_field',
+          reference_to: 'outer_gf_uid',
+          schema: [
+            {
+              uid: 'inner_global',
+              data_type: 'global_field',
+              reference_to: 'inner_gf_uid',
+            },
+          ],
+        },
+      ];
+
+      const dependencies = {
+        globalFields: new Set<string>(),
+        extensions: new Set<string>(),
+        taxonomies: new Set<string>(),
+      };
+
+      (handler as any).traverseSchemaForDependencies(schema, dependencies);
+
+      expect(dependencies.globalFields.has('outer_gf_uid')).to.be.true;
+      expect(dependencies.globalFields.has('inner_gf_uid')).to.be.true;
+      expect(dependencies.globalFields.size).to.equal(2);
+    });
+
+    it('should collect extension nested inside a global field schema', () => {
+      const schema = [
+        {
+          uid: 'seo_block',
+          data_type: 'global_field',
+          reference_to: 'seo_gf',
+          schema: [
+            {
+              uid: 'rich_editor',
+              data_type: 'text',
+              extension_uid: 'nested_editor_ext',
+            },
+          ],
+        },
+      ];
+
+      const dependencies = {
+        globalFields: new Set<string>(),
+        extensions: new Set<string>(),
+        taxonomies: new Set<string>(),
+      };
+
+      (handler as any).traverseSchemaForDependencies(schema, dependencies);
+
+      expect(dependencies.globalFields.has('seo_gf')).to.be.true;
+      expect(dependencies.extensions.has('nested_editor_ext')).to.be.true;
+    });
+
+    it('should collect taxonomy nested inside a global field schema', () => {
+      const schema = [
+        {
+          uid: 'tags_block',
+          data_type: 'global_field',
+          reference_to: 'tags_gf',
+          schema: [
+            {
+              uid: 'categories',
+              data_type: 'taxonomy',
+              taxonomies: [{ taxonomy_uid: 'nested_taxonomy_uid' }],
+            },
+          ],
+        },
+      ];
+
+      const dependencies = {
+        globalFields: new Set<string>(),
+        extensions: new Set<string>(),
+        taxonomies: new Set<string>(),
+      };
+
+      (handler as any).traverseSchemaForDependencies(schema, dependencies);
+
+      expect(dependencies.globalFields.has('tags_gf')).to.be.true;
+      expect(dependencies.taxonomies.has('nested_taxonomy_uid')).to.be.true;
+    });
+
+    it('should collect deeply nested global field inside a global field inside a group', () => {
+      const schema = [
+        {
+          uid: 'content_section',
+          data_type: 'group',
+          schema: [
+            {
+              uid: 'outer_gf',
+              data_type: 'global_field',
+              reference_to: 'outer_gf_uid',
+              schema: [
+                {
+                  uid: 'inner_gf',
+                  data_type: 'global_field',
+                  reference_to: 'inner_gf_uid',
+                  schema: [
+                    {
+                      uid: 'deepest_gf',
+                      data_type: 'global_field',
+                      reference_to: 'deepest_gf_uid',
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+        },
+      ];
+
+      const dependencies = {
+        globalFields: new Set<string>(),
+        extensions: new Set<string>(),
+        taxonomies: new Set<string>(),
+      };
+
+      (handler as any).traverseSchemaForDependencies(schema, dependencies);
+
+      expect(dependencies.globalFields.has('outer_gf_uid')).to.be.true;
+      expect(dependencies.globalFields.has('inner_gf_uid')).to.be.true;
+      expect(dependencies.globalFields.has('deepest_gf_uid')).to.be.true;
+      expect(dependencies.globalFields.size).to.equal(3);
+    });
   });
 });
