@@ -1,4 +1,10 @@
-import { ContentstackClient, sanitizePath, log, handleAndLogError } from '@contentstack/cli-utilities';
+import {
+  ContentstackClient,
+  sanitizePath,
+  log,
+  handleAndLogError,
+  readContentTypeSchemas,
+} from '@contentstack/cli-utilities';
 import * as path from 'path';
 import { QueryExportConfig, Modules } from '../types';
 import { QueryParser } from '../utils/query-parser';
@@ -40,25 +46,10 @@ export class QueryExporter {
     // Step 4: Export queried modules
     await this.exportQueriedModule(parsedQuery);
 
-    // Step 1: Read initial content types and mark them as exported
-    const contentTypesFilePath = path.join(
-      sanitizePath(this.exportQueryConfig.exportDir),
-      sanitizePath(this.exportQueryConfig.branchName || ''),
-      'content_types',
-      'schema.json',
-    );
-    const contentTypes: any = fsUtil.readFile(sanitizePath(contentTypesFilePath)) || [];
-    if (contentTypes.length === 0) {
-      log.info('No content types found, skipping export', this.exportQueryConfig.context);
-      process.exit(0);
-    }
-
-    // Step 5: export other content types which are referenced in previous step
-    log.debug('Starting referenced content types export', this.exportQueryConfig.context);
-    await this.exportReferencedContentTypes();
-    // Step 6: export dependent modules global fields, extensions, taxonomies
-    log.debug('Starting dependent modules export', this.exportQueryConfig.context);
-    await this.exportDependentModules();
+    // Step 5+6: resolve the full transitive closure of referenced content types,
+    // global fields, extensions, taxonomies, and marketplace apps.
+    log.debug('Starting schema closure expansion', this.exportQueryConfig.context);
+    await this.expandSchemaClosure();
     // Step 7: export content modules entries, assets
     log.debug('Starting content modules export', this.exportQueryConfig.context);
     await this.exportContentModules();
@@ -93,162 +84,144 @@ export class QueryExporter {
     log.debug('Queried module export completed', this.exportQueryConfig.context);
   }
 
-  private async exportReferencedContentTypes(): Promise<void> {
-    log.info('Starting export of referenced content types...', this.exportQueryConfig.context);
+  /**
+   * Iteratively expand the set of exported content types, global fields, extensions,
+   * taxonomies, and marketplace apps until no new items are discovered (fixpoint).
+   *
+   * Each iteration scans the combined set of CT and GF documents that currently exist on
+   * disk.  Any newly discovered referenced content types or global fields are exported and
+   * the loop restarts so that their schemas can be scanned in turn.  Leaf dependencies
+   * (extensions, taxonomies, marketplace apps) are collected and exported in the same pass
+   * without triggering an extra iteration, since they do not themselves produce new schemas.
+   *
+   * Personalize is exported exactly once, after the closure stabilises.
+   */
+  private async expandSchemaClosure(): Promise<void> {
+    log.info('Starting export of referenced content types and dependent modules...', this.exportQueryConfig.context);
 
     try {
-      const referencedHandler = new ReferencedContentTypesHandler(this.exportQueryConfig);
-      const exportedContentTypeUIDs: Set<string> = new Set();
-
-      // Step 1: Read initial content types and mark them as exported
-      const contentTypesFilePath = path.join(
+      const ctPath = path.join(
         sanitizePath(this.exportQueryConfig.exportDir),
         sanitizePath(this.exportQueryConfig.branchName || ''),
         'content_types',
-        'schema.json',
       );
-      const contentTypes: any = fsUtil.readFile(sanitizePath(contentTypesFilePath)) || [];
-      if (contentTypes.length === 0) {
-        log.info('No content types found, skipping referenced content types export', this.exportQueryConfig.context);
-        return;
-      }
+      const gfPath = path.join(
+        sanitizePath(this.exportQueryConfig.exportDir),
+        sanitizePath(this.exportQueryConfig.branchName || ''),
+        'global_fields',
+      );
 
-      // Step 2: Start with initial batch (all currently exported content types)
-      let currentBatch = [...contentTypes];
+      const referencedHandler = new ReferencedContentTypesHandler(this.exportQueryConfig);
+      const dependenciesHandler = new ContentTypeDependenciesHandler(this.stackAPIClient, this.exportQueryConfig);
 
-      log.info(`Starting with ${currentBatch.length} initial content types`, this.exportQueryConfig.context);
+      const exportedCTUIDs = new Set<string>();
+      const exportedGFUIDs = new Set<string>();
+      const exportedExtUIDs = new Set<string>();
+      const exportedTaxUIDs = new Set<string>();
+      const exportedMarketplaceUIDs = new Set<string>();
 
-      // track reference depth
       let iterationCount = 0;
-      // Step 3: Process batches until no new references are found
-      while (currentBatch.length > 0 && iterationCount < this.exportQueryConfig.maxCTReferenceDepth) {
+
+      while (iterationCount < this.exportQueryConfig.maxCTReferenceDepth) {
         iterationCount++;
-        log.debug(`Processing referenced content types iteration ${iterationCount}`, this.exportQueryConfig.context);
-        currentBatch.forEach((ct: any) => exportedContentTypeUIDs.add(ct.uid));
-        // Extract referenced content types from current batch
-        const referencedUIDs = await referencedHandler.extractReferencedContentTypes(currentBatch);
+        log.debug(`Schema closure iteration ${iterationCount}`, this.exportQueryConfig.context);
 
-        // Filter out already exported content types
-        const newReferencedUIDs = referencedUIDs.filter((uid: string) => !exportedContentTypeUIDs.has(uid));
+        const allCTs = readContentTypeSchemas(ctPath);
+        const allGFs = readContentTypeSchemas(gfPath);
 
-        if (newReferencedUIDs.length > 0) {
-          log.info(
-            `Found ${newReferencedUIDs.length} new referenced content types to fetch`,
-            this.exportQueryConfig.context,
+        // Record everything currently on disk so we never re-export it.
+        allCTs.forEach((ct: any) => exportedCTUIDs.add(ct.uid));
+        allGFs.forEach((gf: any) => exportedGFUIDs.add(gf.uid));
+
+        const allSchemas = [...allCTs, ...allGFs];
+
+        if (allSchemas.length === 0) {
+          log.info('No schemas found on disk, stopping closure', this.exportQueryConfig.context);
+          break;
+        }
+
+        let foundNewCTs = false;
+        let foundNewGFs = false;
+
+        // Step A: find and export referenced content types from the combined schema set.
+        if (!this.exportQueryConfig.skipReferences) {
+          const referencedUIDs = await referencedHandler.extractReferencedContentTypes(allSchemas);
+          const newCTUIDs = referencedUIDs.filter((uid: string) => !exportedCTUIDs.has(uid));
+
+          if (newCTUIDs.length > 0) {
+            log.info(
+              `Found ${newCTUIDs.length} new referenced content type(s) to fetch`,
+              this.exportQueryConfig.context,
+            );
+            await this.moduleExporter.exportModule('content-types', {
+              query: { modules: { 'content-types': { uid: { $in: newCTUIDs } } } },
+            });
+            // Track immediately so the dedup filter works even if the disk reader
+            // hasn't picked up the newly written files yet.
+            newCTUIDs.forEach((uid: string) => exportedCTUIDs.add(uid));
+            foundNewCTs = true;
+          }
+        }
+
+        // Step B: find and export dependent modules from the combined schema set.
+        if (!this.exportQueryConfig.skipDependencies) {
+          const deps = await dependenciesHandler.extractDependencies(allSchemas);
+
+          const newGFUIDs = [...deps.globalFields].filter((uid: string) => !exportedGFUIDs.has(uid));
+          if (newGFUIDs.length > 0) {
+            log.info(`Found ${newGFUIDs.length} new global field(s)`, this.exportQueryConfig.context);
+            await this.moduleExporter.exportModule('global-fields', {
+              query: { modules: { 'global-fields': { uid: { $in: newGFUIDs } } } },
+            });
+            // Track immediately for the same reason as CTs above.
+            newGFUIDs.forEach((uid: string) => exportedGFUIDs.add(uid));
+            foundNewGFs = true;
+          }
+
+          // Extensions, taxonomies, and marketplace apps are leaf nodes: they do not
+          // produce new schemas, so exporting them never requires an extra iteration.
+          const newExtUIDs = [...deps.extensions].filter((uid: string) => !exportedExtUIDs.has(uid));
+          if (newExtUIDs.length > 0) {
+            log.info(`Found ${newExtUIDs.length} new extension(s)`, this.exportQueryConfig.context);
+            await this.moduleExporter.exportModule('extensions', {
+              query: { modules: { extensions: { uid: { $in: newExtUIDs } } } },
+            });
+            newExtUIDs.forEach((uid: string) => exportedExtUIDs.add(uid));
+          }
+
+          const newMarketplaceUIDs = [...deps.marketplaceApps].filter(
+            (uid: string) => !exportedMarketplaceUIDs.has(uid),
           );
+          if (newMarketplaceUIDs.length > 0) {
+            log.info(`Found ${newMarketplaceUIDs.length} new marketplace app(s)`, this.exportQueryConfig.context);
+            await this.moduleExporter.exportModule('marketplace-apps', {
+              query: { modules: { 'marketplace-apps': { installation_uid: { $in: newMarketplaceUIDs } } } },
+            });
+            newMarketplaceUIDs.forEach((uid: string) => exportedMarketplaceUIDs.add(uid));
+          }
 
-          // // Add to exported set to avoid duplicates in future iterations
-          // newReferencedUIDs.forEach((uid) => exportedContentTypeUIDs.add(uid));
+          const newTaxUIDs = [...deps.taxonomies].filter((uid: string) => !exportedTaxUIDs.has(uid));
+          if (newTaxUIDs.length > 0) {
+            log.info(`Found ${newTaxUIDs.length} new taxonom(ies)`, this.exportQueryConfig.context);
+            await this.moduleExporter.exportModule('taxonomies', {
+              query: { modules: { taxonomies: { uid: { $in: newTaxUIDs } } } },
+            });
+            newTaxUIDs.forEach((uid: string) => exportedTaxUIDs.add(uid));
+          }
+        }
 
-          // Step 4: Fetch new content types using moduleExporter
-          const query = {
-            modules: {
-              'content-types': {
-                uid: {
-                  $in: newReferencedUIDs,
-                },
-              },
-            },
-          };
-
-          await this.moduleExporter.exportModule('content-types', { query });
-
-          const newContentTypes = fsUtil.readFile(sanitizePath(contentTypesFilePath)) as any[];
-          currentBatch = [...newContentTypes];
-
-          // Push new content types to main array
-          contentTypes.push(...newContentTypes);
-
-          log.info(`Fetched ${currentBatch.length} new content types for next iteration`, this.exportQueryConfig.context);
-        } else {
-          log.info('No new referenced content types found, stopping recursion', this.exportQueryConfig.context);
+        if (!foundNewCTs && !foundNewGFs) {
+          log.info('Schema closure complete, no new content types or global fields found', this.exportQueryConfig.context);
           break;
         }
       }
 
-      fsUtil.writeFile(sanitizePath(contentTypesFilePath), contentTypes);
-      log.success('Referenced content types export completed successfully', this.exportQueryConfig.context);
-    } catch (error) {
-      handleAndLogError(error, this.exportQueryConfig.context, 'Error exporting referenced content types');
-      throw error;
-    }
-  }
-
-  private async exportDependentModules(): Promise<void> {
-    log.info('Starting export of dependent modules...', this.exportQueryConfig.context);
-
-    try {
-      const dependenciesHandler = new ContentTypeDependenciesHandler(this.stackAPIClient, this.exportQueryConfig);
-
-      // Extract dependencies from all exported content types
-      const dependencies = await dependenciesHandler.extractDependencies();
-      log.debug('Dependencies extracted successfully', this.exportQueryConfig.context);
-
-      // Export Global Fields
-      if (dependencies.globalFields.size > 0) {
-        const globalFieldUIDs = Array.from(dependencies.globalFields);
-        log.info(`Exporting ${globalFieldUIDs.length} global fields...`, this.exportQueryConfig.context);
-
-        const query = {
-          modules: {
-            'global-fields': {
-              uid: { $in: globalFieldUIDs },
-            },
-          },
-        };
-        await this.moduleExporter.exportModule('global-fields', { query });
-      }
-
-      // Export Extensions
-      if (dependencies.extensions.size > 0) {
-        const extensionUIDs = Array.from(dependencies.extensions);
-        log.info(`Exporting ${extensionUIDs.length} extensions...`, this.exportQueryConfig.context);
-
-        const query = {
-          modules: {
-            extensions: {
-              uid: { $in: extensionUIDs },
-            },
-          },
-        };
-        await this.moduleExporter.exportModule('extensions', { query });
-      }
-
-      // export marketplace apps
-      if (dependencies.marketplaceApps.size > 0) {
-        const marketplaceAppInstallationUIDs = Array.from(dependencies.marketplaceApps);
-        log.info(`Exporting ${marketplaceAppInstallationUIDs.length} marketplace apps...`, this.exportQueryConfig.context);
-        const query = {
-          modules: {
-            'marketplace-apps': {
-              installation_uid: { $in: marketplaceAppInstallationUIDs },
-            },
-          },
-        };
-        await this.moduleExporter.exportModule('marketplace-apps', { query });
-      }
-
-      // Export Taxonomies
-      if (dependencies.taxonomies.size > 0) {
-        const taxonomyUIDs = Array.from(dependencies.taxonomies);
-        log.info(`Exporting ${taxonomyUIDs.length} taxonomies...`, this.exportQueryConfig.context);
-
-        const query = {
-          modules: {
-            taxonomies: {
-              uid: { $in: taxonomyUIDs },
-            },
-          },
-        };
-        await this.moduleExporter.exportModule('taxonomies', { query });
-      }
-
-      // export personalize
+      // Personalize is a single global module exported once after the closure stabilises.
       await this.moduleExporter.exportModule('personalize');
 
-      log.success('Dependent modules export completed successfully', this.exportQueryConfig.context);
+      log.success('Referenced content types and dependent modules exported successfully', this.exportQueryConfig.context);
     } catch (error) {
-      handleAndLogError(error, this.exportQueryConfig.context, 'Error exporting dependent modules');
+      handleAndLogError(error, this.exportQueryConfig.context, 'Error during schema closure expansion');
       throw error;
     }
   }
