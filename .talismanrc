@@ -11,4 +11,10 @@ fileignoreconfig:
     checksum: cae3858eea36c1f716ebe4a9679fc3d4eee628cb244cf4fc0a6eccbd8cecb36d
   - filename: package-lock.json
     checksum: 459bff7a9ebcc605fa897611c89b63be3ac5ad784a976695e7ba1eb8068e1d71
+  - filename: test/unit/content-type-helper.test.ts
+    checksum: 50077110a6e9132f01a20c1dfbfe892f6440317c27ca3dc42a08dbfec8bd87a7
+  - filename: test/unit/dependency-resolver.test.ts
+    checksum: 059cd059f42a15d01429c0265e61d320739cf42bdc85d7e44f57d3472daec9bb
+  - filename: test/unit/query-executor.test.ts
+    checksum: abc9d421440c1ab4d507032b74139de92d0aeb46e1de8e8e46a5080fa3c140da
 version: '1.0'
