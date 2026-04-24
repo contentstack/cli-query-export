@@ -1,20 +1,14 @@
 fileignoreconfig:
-  - filename: skills/code-review/SKILL.md
-    checksum: 8c0c5c1a18ba08aa0c048d261f1ca81c152def23745fd74b531b75a23a5ac969
-  - filename: skills/framework/SKILL.md
-    checksum: 5674849276e2087f6361decb2c7e427f451ec7799538fa2eb697b0a8b7b92f44
-  - filename: .cursor/rules/contentstack-cli.mdc
-    checksum: 11bf8883f584b900ce1cde336057391717b47eb5a304cb46c5660bb3185cef2f
-  - filename: skills/code-review/references/code-review-checklist.md
-    checksum: 6e65ad06469083ed0196edaf8bd2d4478800493b32535be7c98e436082fba44a
-  - filename: skills/framework/references/framework-patterns.md
-    checksum: cae3858eea36c1f716ebe4a9679fc3d4eee628cb244cf4fc0a6eccbd8cecb36d
   - filename: package-lock.json
-    checksum: 459bff7a9ebcc605fa897611c89b63be3ac5ad784a976695e7ba1eb8068e1d71
-  - filename: test/unit/content-type-helper.test.ts
-    checksum: 50077110a6e9132f01a20c1dfbfe892f6440317c27ca3dc42a08dbfec8bd87a7
-  - filename: test/unit/dependency-resolver.test.ts
-    checksum: 059cd059f42a15d01429c0265e61d320739cf42bdc85d7e44f57d3472daec9bb
-  - filename: test/unit/query-executor.test.ts
-    checksum: abc9d421440c1ab4d507032b74139de92d0aeb46e1de8e8e46a5080fa3c140da
+    checksum: a907736828db3f054d2e29324a26265e4eeee28416ca2feef4b71ac037468d08
+  - filename: skills/testing/SKILL.md
+    checksum: da9831797a5e6a4d2e6e846c3f6d2583d84008d2dfd454dd7effe2f897c43a7b
+  - filename: skills/framework/SKILL.md
+    checksum: 217cf9123bf9b62a4d9b0c891af8ba388173c601c782ed0fea432f6be7ef5e56
+  - filename: skills/contentstack-cli/SKILL.md
+    checksum: b42e3526fb902a31080824b776cc8e233646139ee0915d89c0925744d56d586f
+  - filename: skills/code-review/SKILL.md
+    checksum: 687efb830fb4a9fb2b2e6682db052771706ddd9b12dc9cec04943e3cade929b3
+  - filename: skills/dev-workflow/SKILL.md
+    checksum: 03434201e3aaaa9239aff2f97826d64ac4ca31467b77c07330ac4b608ee24939
 version: '1.0'
