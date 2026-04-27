@@ -1,6 +1,6 @@
 fileignoreconfig:
   - filename: package-lock.json
-    checksum: 416f3ebe63b82a89487b17bedee9747678d3c85b132a65f6d4f532165736ca41
+    checksum: b4f6e41c55c3c7fa9d8b7ea903eb9bc85f27464306a428c97b7e96e86ffce5f7
   - filename: skills/testing/SKILL.md
     checksum: da9831797a5e6a4d2e6e846c3f6d2583d84008d2dfd454dd7effe2f897c43a7b
   - filename: skills/framework/SKILL.md
