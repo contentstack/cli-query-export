@@ -175,8 +175,8 @@ describe('Config Handler', () => {
           const config = await setupQueryExportConfig(flags);
           expect(config.stackApiKey).to.be.a('string');
         } catch (error) {
-          // Expected behavior for missing API key - should fail with login error, not prompt
-          expect(error.message).to.include('login');
+          // Expected when not authenticated: explicit error, not an interactive prompt
+          expect(error.message).to.include('Log in');
         }
       });
     });
