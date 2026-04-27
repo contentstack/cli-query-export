@@ -2,7 +2,6 @@ import { log, handleAndLogError } from '@contentstack/cli-utilities';
 import ExportCommand from '@contentstack/cli-cm-export';
 import { QueryExportConfig, Modules, ExportOptions } from '../types';
 
-
 export class ModuleExporter {
   private exportQueryConfig: QueryExportConfig;
   private exportedModules: string[] = [];
@@ -60,9 +59,11 @@ export class ModuleExporter {
     // Module
     cmd.push('--module', moduleName);
 
-    // Alias (management token)
+    // Alias or management token (mutually exclusive for the export CLI)
     if (options.alias) {
       cmd.push('-a', options.alias);
+    } else if (this.exportQueryConfig.managementToken) {
+      cmd.push('-a', this.exportQueryConfig.managementToken);
     }
 
     // Branch

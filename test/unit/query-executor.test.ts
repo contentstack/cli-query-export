@@ -509,7 +509,7 @@ describe('QueryExporter', () => {
       await (queryExporter as any).exportContentModules();
 
       expect(setTimeoutStub.calledOnce).to.be.true;
-      expect(setTimeoutStub.calledWith(sinon.match.func, 10000)).to.be.true;
+      expect(setTimeoutStub.calledWith(sinon.match.func, 5000)).to.be.true;
     });
 
     it('should handle entries export errors', async () => {

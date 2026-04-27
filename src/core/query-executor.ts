@@ -5,6 +5,7 @@ import {
   handleAndLogError,
   readContentTypeSchemas,
 } from '@contentstack/cli-utilities';
+import * as fs from 'fs';
 import * as path from 'path';
 import { QueryExportConfig, Modules } from '../types';
 import { QueryParser } from '../utils/query-parser';
@@ -287,20 +288,10 @@ export class QueryExporter {
       if (assetUIDs.length > 0) {
         log.info(`Found ${assetUIDs.length} referenced assets to export`, this.exportQueryConfig.context);
 
+        fs.mkdirSync(assetsDir, { recursive: true });
+
         // Define batch size - can be configurable through exportQueryConfig
         const batchSize = this.exportQueryConfig.assetBatchSize || 100;
-
-        if (assetUIDs.length <= batchSize) {
-          const query = {
-            modules: {
-              assets: {
-                uid: { $in: assetUIDs },
-              },
-            },
-          };
-
-          await this.moduleExporter.exportModule('assets', { query });
-        }
 
         // if asset size is bigger than batch size, then we need to export in batches
         // Calculate number of batches
