@@ -1,7 +1,14 @@
 import * as path from 'path';
 import { QueryExportConfig } from '../types';
 import { fsUtil } from './index';
-import { ContentstackClient, sanitizePath, log, formatError, handleAndLogError } from '@contentstack/cli-utilities';
+import {
+  ContentstackClient,
+  sanitizePath,
+  log,
+  formatError,
+  handleAndLogError,
+  readContentTypeSchemas,
+} from '@contentstack/cli-utilities';
 
 export class ContentTypeDependenciesHandler {
   private exportQueryConfig: QueryExportConfig;
@@ -12,21 +19,36 @@ export class ContentTypeDependenciesHandler {
     this.stackAPIClient = stackAPIClient;
   }
 
-  async extractDependencies(): Promise<{
+  /**
+   * Extract all dependencies (global fields, extensions, taxonomies, marketplace apps) from the
+   * provided schema documents.  When `schemas` is omitted the method falls back to reading content
+   * type schemas from disk — kept for backward compatibility with callers that do not supply
+   * already-loaded documents.
+   *
+   * Pass the combined set of content-type AND global-field documents so that transitive
+   * dependencies inside global fields are discovered in the same pass.
+   */
+  async extractDependencies(schemas?: any[]): Promise<{
     globalFields: Set<string>;
     extensions: Set<string>;
     taxonomies: Set<string>;
     marketplaceApps: Set<string>;
   }> {
-    const contentTypesFilePath = path.join(
-      sanitizePath(this.exportQueryConfig.exportDir),
-      sanitizePath(this.exportQueryConfig.branchName || ''),
-      'content_types',
-      'schema.json',
-    );
-    const allContentTypes = (fsUtil.readFile(sanitizePath(contentTypesFilePath)) as any[]) || [];
-    if (allContentTypes.length === 0) {
-      log.info('No content types found, skipping dependency extraction', this.exportQueryConfig.context);
+    let allSchemas: any[];
+
+    if (schemas !== undefined) {
+      allSchemas = schemas;
+    } else {
+      const contentTypesFilePath = path.join(
+        sanitizePath(this.exportQueryConfig.exportDir),
+        sanitizePath(this.exportQueryConfig.branchName || ''),
+        'content_types',
+      );
+      allSchemas = readContentTypeSchemas(contentTypesFilePath);
+    }
+
+    if (allSchemas.length === 0) {
+      log.info('No schemas found, skipping dependency extraction', this.exportQueryConfig.context);
       return {
         globalFields: new Set<string>(),
         extensions: new Set<string>(),
@@ -35,7 +57,7 @@ export class ContentTypeDependenciesHandler {
       };
     }
 
-    log.info(`Extracting dependencies from ${allContentTypes.length} content types`, this.exportQueryConfig.context);
+    log.info(`Extracting dependencies from ${allSchemas.length} schema(s)`, this.exportQueryConfig.context);
 
     const dependencies = {
       globalFields: new Set<string>(),
@@ -44,9 +66,9 @@ export class ContentTypeDependenciesHandler {
       marketplaceApps: new Set<string>(),
     };
 
-    for (const contentType of allContentTypes) {
-      if (contentType.schema) {
-        this.traverseSchemaForDependencies(contentType.schema, dependencies);
+    for (const doc of allSchemas) {
+      if (doc.schema) {
+        this.traverseSchemaForDependencies(doc.schema, dependencies);
       }
     }
 
@@ -152,7 +174,7 @@ export class ContentTypeDependenciesHandler {
       }
 
       // Recursive traversal for nested structures
-      if (field.data_type === 'group' && field.schema) {
+      if ((field.data_type === 'group' || field.data_type === 'global_field') && field.schema) {
         this.traverseSchemaForDependencies(field.schema, dependencies);
       }
 

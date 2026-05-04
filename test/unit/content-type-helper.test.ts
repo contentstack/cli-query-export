@@ -444,4 +444,59 @@ describe('Content Type Helper Utilities', () => {
       expect(result).to.deep.equal([]);
     });
   });
+
+  describe('extractReferencedContentTypes — global field and guard behaviour', () => {
+    it('should not throw when a global_field has no schema property (stub form)', async () => {
+      const batch = [
+        {
+          uid: 'page',
+          schema: [
+            {
+              uid: 'seo',
+              data_type: 'global_field',
+              reference_to: 'seo_gf',
+              // no schema array — this is the "stub" representation in a CT's inline schema
+            },
+          ],
+        },
+      ];
+
+      logStub = stub(logger, 'log');
+      const result = await handler.extractReferencedContentTypes(batch);
+      expect(result).to.deep.equal([]);
+    });
+
+    it('should find CT references inside a global field document passed directly', async () => {
+      // The caller passes both the CT doc and the GF doc in the same batch.
+      const batch = [
+        {
+          uid: 'page',
+          schema: [{ uid: 'seo', data_type: 'global_field', reference_to: 'seo_gf' }],
+        },
+        {
+          uid: 'seo_gf',
+          schema: [{ uid: 'author_ref', data_type: 'reference', reference_to: ['author'] }],
+        },
+      ];
+
+      logStub = stub(logger, 'log');
+      const result = await handler.extractReferencedContentTypes(batch);
+      expect(result).to.include('author');
+    });
+
+    it('should not recurse into global_field stub when schema is an empty array', async () => {
+      const batch = [
+        {
+          uid: 'page',
+          schema: [
+            { uid: 'seo', data_type: 'global_field', reference_to: 'seo_gf', schema: [] as any[] },
+          ],
+        },
+      ];
+
+      logStub = stub(logger, 'log');
+      const result = await handler.extractReferencedContentTypes(batch);
+      expect(result).to.deep.equal([]);
+    });
+  });
 });

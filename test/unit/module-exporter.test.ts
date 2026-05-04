@@ -55,7 +55,7 @@ describe('ModuleExporter', () => {
       expect(cmd).to.include('-k', 'test-stack-api-key');
       expect(cmd).to.include('-d', './test-export');
       expect(cmd).to.include('--module', 'entries');
-      expect(cmd).to.include('-A', 'test-management-token');
+      expect(cmd).to.include('-a', 'test-management-token');
       expect(cmd).to.include('-y');
     });
 
@@ -108,7 +108,7 @@ describe('ModuleExporter', () => {
       });
 
       expect(cmd).to.include('-a', 'production-stack');
-      expect(cmd).to.not.include('-A');
+      expect(cmd).to.not.include('test-management-token');
     });
 
     it('should include external config path when specified', () => {
@@ -145,7 +145,7 @@ describe('ModuleExporter', () => {
       expect(cmd).to.include('-d', './test-export');
       expect(cmd).to.not.include('--branch');
       expect(cmd).to.not.include('--config');
-      expect(cmd).to.not.include('-A');
+      expect(cmd).to.not.include('-a');
     });
   });
 

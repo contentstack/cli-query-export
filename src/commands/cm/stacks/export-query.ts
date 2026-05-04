@@ -7,6 +7,8 @@ import {
   ContentstackClient,
   log,
   handleAndLogError,
+  messageHandler,
+  loadChalk,
 } from '@contentstack/cli-utilities';
 import { QueryExporter } from '../../../core/query-executor';
 import { QueryExportConfig } from '../../../types';
@@ -70,8 +72,10 @@ export default class ExportQueryCommand extends Command {
   };
 
   async run(): Promise<void> {
+    await loadChalk();
     try {
       const { flags } = await this.parse(ExportQueryCommand);
+      this.initializeMessageHandler();
 
       // Setup export configuration
       const exportQueryConfig = await setupQueryExportConfig(flags);
@@ -111,5 +115,9 @@ export default class ExportQueryCommand extends Command {
     } catch (error) {
       handleAndLogError(error);
     }
+  }
+
+  initializeMessageHandler(): void {
+    messageHandler.init(this.context);
   }
 }
