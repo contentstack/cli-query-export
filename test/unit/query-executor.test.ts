@@ -10,6 +10,7 @@ import {
   AssetReferenceHandler,
   fsUtil,
 } from '../../src/utils';
+import * as contentTypeUtils from '@contentstack/cli-utilities/lib/content-type-utils';
 
 describe('QueryExporter', () => {
   let sandbox: sinon.SinonSandbox;
@@ -38,6 +39,7 @@ describe('QueryExporter', () => {
       branchName: 'main',
       securedAssets: false,
       externalConfigPath: './config/export-config.json',
+      maxCTReferenceDepth: 20,
     };
 
     // Stub logger to prevent console output during tests
@@ -73,8 +75,7 @@ describe('QueryExporter', () => {
     let queryParserStub: sinon.SinonStub;
     let exportGeneralModulesStub: sinon.SinonStub;
     let exportQueriedModuleStub: sinon.SinonStub;
-    let exportReferencedContentTypesStub: sinon.SinonStub;
-    let exportDependentModulesStub: sinon.SinonStub;
+    let expandSchemaClosureStub: sinon.SinonStub;
     let exportContentModulesStub: sinon.SinonStub;
 
     beforeEach(() => {
@@ -83,8 +84,7 @@ describe('QueryExporter', () => {
       });
       exportGeneralModulesStub = sandbox.stub(queryExporter as any, 'exportGeneralModules').resolves();
       exportQueriedModuleStub = sandbox.stub(queryExporter as any, 'exportQueriedModule').resolves();
-      exportReferencedContentTypesStub = sandbox.stub(queryExporter as any, 'exportReferencedContentTypes').resolves();
-      exportDependentModulesStub = sandbox.stub(queryExporter as any, 'exportDependentModules').resolves();
+      expandSchemaClosureStub = sandbox.stub(queryExporter as any, 'expandSchemaClosure').resolves();
       exportContentModulesStub = sandbox.stub(queryExporter as any, 'exportContentModules').resolves();
     });
 
@@ -94,8 +94,7 @@ describe('QueryExporter', () => {
       expect(queryParserStub.calledOnce).to.be.true;
       expect(exportGeneralModulesStub.calledOnce).to.be.true;
       expect(exportQueriedModuleStub.calledOnce).to.be.true;
-      expect(exportReferencedContentTypesStub.calledOnce).to.be.true;
-      expect(exportDependentModulesStub.calledOnce).to.be.true;
+      expect(expandSchemaClosureStub.calledOnce).to.be.true;
       expect(exportContentModulesStub.calledOnce).to.be.true;
     });
 
@@ -106,8 +105,7 @@ describe('QueryExporter', () => {
         queryParserStub,
         exportGeneralModulesStub,
         exportQueriedModuleStub,
-        exportReferencedContentTypesStub,
-        exportDependentModulesStub,
+        expandSchemaClosureStub,
         exportContentModulesStub,
       );
     });
@@ -235,146 +233,249 @@ describe('QueryExporter', () => {
     });
   });
 
-  describe('exportReferencedContentTypes', () => {
+  describe('expandSchemaClosure', () => {
     let moduleExporterStub: sinon.SinonStub;
-    let fsUtilStub: sinon.SinonStub;
+    let readContentTypeSchemasStub: sinon.SinonStub;
     let referencedHandlerStub: any;
+    let dependenciesHandlerStub: any;
+
+    const mockCTs = [{ uid: 'page', title: 'Page', schema: [] as any[] }];
+    const emptyDeps = {
+      globalFields: new Set<string>(),
+      extensions: new Set<string>(),
+      taxonomies: new Set<string>(),
+      marketplaceApps: new Set<string>(),
+    };
 
     beforeEach(() => {
       moduleExporterStub = sandbox.stub((queryExporter as any).moduleExporter, 'exportModule').resolves();
-      fsUtilStub = sandbox.stub(fsUtil, 'readFile');
 
-      // Mock file system responses
-      const mockContentTypes = [
-        { uid: 'page', title: 'Page' },
-        { uid: 'blog', title: 'Blog' },
-      ];
-      fsUtilStub.returns(mockContentTypes);
-      sandbox.stub(fsUtil, 'writeFile').returns(undefined);
+      // Default: CT path returns mockCTs, GF path returns empty.
+      readContentTypeSchemasStub = sandbox
+        .stub(contentTypeUtils, 'readContentTypeSchemas')
+        .callsFake((dirPath: string) => (dirPath.includes('global_fields') ? [] : mockCTs));
 
-      // Mock ReferencedContentTypesHandler
-      referencedHandlerStub = {
-        extractReferencedContentTypes: sandbox.stub().resolves(['referenced_type_1', 'referenced_type_2']),
-      };
+      referencedHandlerStub = { extractReferencedContentTypes: sandbox.stub().resolves([]) };
       sandbox
         .stub(ReferencedContentTypesHandler.prototype, 'extractReferencedContentTypes')
         .callsFake(referencedHandlerStub.extractReferencedContentTypes);
-    });
 
-    it('should handle no referenced content types found', async () => {
-      referencedHandlerStub.extractReferencedContentTypes.resolves([]);
-
-      await (queryExporter as any).exportReferencedContentTypes();
-
-      expect(moduleExporterStub.called).to.be.false;
-    });
-
-    it('should export new referenced content types', async () => {
-      // First call returns references, second call returns empty (no more references)
-      referencedHandlerStub.extractReferencedContentTypes
-        .onFirstCall()
-        .resolves(['new_type_1', 'new_type_2'])
-        .onSecondCall()
-        .resolves([]);
-
-      await (queryExporter as any).exportReferencedContentTypes();
-
-      expect(moduleExporterStub.calledOnce).to.be.true;
-      const exportCall = moduleExporterStub.getCall(0);
-      expect(exportCall.args[0]).to.equal('content-types');
-      expect(exportCall.args[1].query.modules['content-types'].uid.$in).to.deep.equal(['new_type_1', 'new_type_2']);
-    });
-
-    it('should handle file system errors gracefully', async () => {
-      fsUtilStub.throws(new Error('File not found'));
-
-      try {
-        await (queryExporter as any).exportReferencedContentTypes();
-        expect.fail('Should have thrown error');
-      } catch (error) {
-        expect(error.message).to.equal('File not found');
-      }
-    });
-  });
-
-  describe('exportDependentModules', () => {
-    let moduleExporterStub: sinon.SinonStub;
-    let dependenciesHandlerStub: any;
-
-    beforeEach(() => {
-      moduleExporterStub = sandbox.stub((queryExporter as any).moduleExporter, 'exportModule').resolves();
-
-      // Mock ContentTypeDependenciesHandler
-      dependenciesHandlerStub = {
-        extractDependencies: sandbox.stub().returns({
-          globalFields: new Set(['global_field_1', 'global_field_2']),
-          extensions: new Set(['extension_1']),
-          taxonomies: new Set(['taxonomy_1', 'taxonomy_2']),
-        }),
-      };
+      dependenciesHandlerStub = { extractDependencies: sandbox.stub().resolves(emptyDeps) };
       sandbox
         .stub(ContentTypeDependenciesHandler.prototype, 'extractDependencies')
         .callsFake(dependenciesHandlerStub.extractDependencies);
     });
 
-    it('should export all dependency types when found', async () => {
-      await (queryExporter as any).exportDependentModules();
+    it('should export personalize exactly once when no new items are found', async () => {
+      await (queryExporter as any).expandSchemaClosure();
 
-      expect(moduleExporterStub.callCount).to.equal(3);
-
-      // Check global fields export
-      const globalFieldsCall = moduleExporterStub.getCall(0);
-      expect(globalFieldsCall.args[0]).to.equal('global-fields');
-      expect(globalFieldsCall.args[1].query.modules['global-fields'].uid.$in).to.deep.equal([
-        'global_field_1',
-        'global_field_2',
-      ]);
-
-      // Check extensions export
-      const extensionsCall = moduleExporterStub.getCall(1);
-      expect(extensionsCall.args[0]).to.equal('extensions');
-      expect(extensionsCall.args[1].query.modules.extensions.uid.$in).to.deep.equal(['extension_1']);
-
-      // Check taxonomies export
-      const taxonomiesCall = moduleExporterStub.getCall(2);
-      expect(taxonomiesCall.args[0]).to.equal('taxonomies');
-      expect(taxonomiesCall.args[1].query.modules.taxonomies.uid.$in).to.deep.equal(['taxonomy_1', 'taxonomy_2']);
+      const personalizeCalls = moduleExporterStub.getCalls().filter((c) => c.args[0] === 'personalize');
+      expect(personalizeCalls).to.have.lengthOf(1);
+      // No CT or GF export should have happened
+      expect(moduleExporterStub.getCalls().filter((c) => c.args[0] === 'content-types')).to.have.lengthOf(0);
+      expect(moduleExporterStub.getCalls().filter((c) => c.args[0] === 'global-fields')).to.have.lengthOf(0);
     });
 
-    it('should skip empty dependency sets', async () => {
-      dependenciesHandlerStub.extractDependencies.returns({
-        globalFields: new Set(),
+    it('should pass combined CT and GF schemas to extractReferencedContentTypes', async () => {
+      const mockGFs = [{ uid: 'seo_gf', schema: [] as any[] }];
+      readContentTypeSchemasStub.callsFake((dirPath: string) =>
+        dirPath.includes('global_fields') ? mockGFs : mockCTs,
+      );
+
+      await (queryExporter as any).expandSchemaClosure();
+
+      const callArgs = referencedHandlerStub.extractReferencedContentTypes.getCall(0).args[0];
+      expect(callArgs).to.deep.include({ uid: 'page', title: 'Page', schema: [] as any[] });
+      expect(callArgs).to.deep.include({ uid: 'seo_gf', schema: [] as any[] });
+    });
+
+    it('should pass combined CT and GF schemas to extractDependencies', async () => {
+      const mockGFs = [{ uid: 'seo_gf', schema: [] as any[] }];
+      readContentTypeSchemasStub.callsFake((dirPath: string) =>
+        dirPath.includes('global_fields') ? mockGFs : mockCTs,
+      );
+
+      await (queryExporter as any).expandSchemaClosure();
+
+      const callArgs = dependenciesHandlerStub.extractDependencies.getCall(0).args[0];
+      expect(callArgs).to.deep.include({ uid: 'page', title: 'Page', schema: [] as any[] });
+      expect(callArgs).to.deep.include({ uid: 'seo_gf', schema: [] as any[] });
+    });
+
+    it('should export new referenced content types found in CT schemas', async () => {
+      referencedHandlerStub.extractReferencedContentTypes
+        .onFirstCall()
+        .resolves(['new_ct'])
+        .resolves([]);
+
+      await (queryExporter as any).expandSchemaClosure();
+
+      const ctCall = moduleExporterStub.getCalls().find((c) => c.args[0] === 'content-types');
+      expect(ctCall).to.exist;
+      expect(ctCall!.args[1].query.modules['content-types'].uid.$in).to.deep.equal(['new_ct']);
+    });
+
+    it('should export new global fields discovered from CT schemas', async () => {
+      dependenciesHandlerStub.extractDependencies
+        .onFirstCall()
+        .resolves({ globalFields: new Set(['gf_a']), extensions: new Set(), taxonomies: new Set(), marketplaceApps: new Set() })
+        .resolves(emptyDeps);
+
+      await (queryExporter as any).expandSchemaClosure();
+
+      const gfCall = moduleExporterStub.getCalls().find((c) => c.args[0] === 'global-fields');
+      expect(gfCall).to.exist;
+      expect(gfCall!.args[1].query.modules['global-fields'].uid.$in).to.deep.equal(['gf_a']);
+    });
+
+    it('should iterate to find CT references inside global field schemas', async () => {
+      // Iter 1: GF A is newly discovered from CT deps. GF A is not yet on disk.
+      // Iter 2: GF A is now on disk; its schema exposes a reference to CT B.
+      const gfADoc = [{ uid: 'gf_a', schema: [] as any[] }];
+
+      readContentTypeSchemasStub.callsFake((dirPath: string) => {
+        if (dirPath.includes('global_fields')) {
+          return dependenciesHandlerStub.extractDependencies.callCount > 1 ? gfADoc : [];
+        }
+        return mockCTs;
+      });
+
+      dependenciesHandlerStub.extractDependencies
+        .onFirstCall()
+        .resolves({ globalFields: new Set(['gf_a']), extensions: new Set(), taxonomies: new Set(), marketplaceApps: new Set() })
+        .resolves(emptyDeps);
+
+      referencedHandlerStub.extractReferencedContentTypes
+        .onFirstCall().resolves([])       // iter 1: only CTs on disk, no CT refs
+        .onSecondCall().resolves(['ct_b']) // iter 2: GF A adds a CT ref to ct_b
+        .resolves([]);
+
+      await (queryExporter as any).expandSchemaClosure();
+
+      const ctCall = moduleExporterStub.getCalls().find((c) => c.args[0] === 'content-types');
+      expect(ctCall).to.exist;
+      expect(ctCall!.args[1].query.modules['content-types'].uid.$in).to.include('ct_b');
+
+      const gfCall = moduleExporterStub.getCalls().find((c) => c.args[0] === 'global-fields');
+      expect(gfCall).to.exist;
+      expect(gfCall!.args[1].query.modules['global-fields'].uid.$in).to.include('gf_a');
+    });
+
+    it('should not re-export already exported global fields across iterations', async () => {
+      // gf_a is returned by extractDependencies on every call, but should only be exported once.
+      dependenciesHandlerStub.extractDependencies.resolves({
+        globalFields: new Set(['gf_a']),
         extensions: new Set(),
         taxonomies: new Set(),
+        marketplaceApps: new Set(),
       });
 
-      await (queryExporter as any).exportDependentModules();
+      // Trigger a second iteration via a new CT reference so we can verify gf_a is not re-exported.
+      referencedHandlerStub.extractReferencedContentTypes
+        .onFirstCall().resolves(['new_ct'])
+        .resolves([]);
 
-      expect(moduleExporterStub.called).to.be.false;
+      await (queryExporter as any).expandSchemaClosure();
+
+      const gfCalls = moduleExporterStub.getCalls().filter((c) => c.args[0] === 'global-fields');
+      expect(gfCalls).to.have.lengthOf(1);
     });
 
-    it('should handle partial dependencies', async () => {
-      dependenciesHandlerStub.extractDependencies.returns({
-        globalFields: new Set(['global_field_1']),
-        extensions: new Set(),
-        taxonomies: new Set(['taxonomy_1']),
+    it('should not re-export already exported content types across iterations', async () => {
+      // new_ct returned on first AND second call — should only be exported once.
+      referencedHandlerStub.extractReferencedContentTypes
+        .onFirstCall().resolves(['new_ct'])
+        .onSecondCall().resolves(['new_ct']) // already exported — should be filtered
+        .resolves([]);
+
+      // Trigger a second iteration via a new GF dep.
+      dependenciesHandlerStub.extractDependencies
+        .onFirstCall().resolves({ globalFields: new Set(['gf_a']), extensions: new Set(), taxonomies: new Set(), marketplaceApps: new Set() })
+        .resolves(emptyDeps);
+
+      await (queryExporter as any).expandSchemaClosure();
+
+      const ctCalls = moduleExporterStub.getCalls().filter((c) => c.args[0] === 'content-types');
+      expect(ctCalls).to.have.lengthOf(1);
+    });
+
+    it('should export extensions, taxonomies, and marketplace apps as leaf deps', async () => {
+      dependenciesHandlerStub.extractDependencies.resolves({
+        globalFields: new Set(),
+        extensions: new Set(['ext_1']),
+        taxonomies: new Set(['tax_1']),
+        marketplaceApps: new Set(['mp_app_1']),
       });
 
-      await (queryExporter as any).exportDependentModules();
+      await (queryExporter as any).expandSchemaClosure();
 
-      expect(moduleExporterStub.callCount).to.equal(2);
-      expect(moduleExporterStub.calledWith('global-fields')).to.be.true;
-      expect(moduleExporterStub.calledWith('taxonomies')).to.be.true;
-      expect(moduleExporterStub.calledWith('extensions')).to.be.false;
+      expect(moduleExporterStub.getCalls().some((c) => c.args[0] === 'extensions')).to.be.true;
+      expect(moduleExporterStub.getCalls().some((c) => c.args[0] === 'taxonomies')).to.be.true;
+      expect(moduleExporterStub.getCalls().some((c) => c.args[0] === 'marketplace-apps')).to.be.true;
     });
 
-    it('should handle dependencies extraction errors', async () => {
-      dependenciesHandlerStub.extractDependencies.throws(new Error('Dependencies extraction failed'));
+    it('should skip CT reference extraction when skipReferences is true', async () => {
+      mockConfig.skipReferences = true;
+      const localExporter = new QueryExporter(mockManagementClient, mockConfig);
+      const localModuleStub = sandbox.stub((localExporter as any).moduleExporter, 'exportModule').resolves();
+
+      await (localExporter as any).expandSchemaClosure();
+
+      expect(referencedHandlerStub.extractReferencedContentTypes.called).to.be.false;
+      expect(localModuleStub.getCalls().filter((c) => c.args[0] === 'content-types')).to.have.lengthOf(0);
+    });
+
+    it('should skip dependency extraction when skipDependencies is true', async () => {
+      mockConfig.skipDependencies = true;
+      const localExporter = new QueryExporter(mockManagementClient, mockConfig);
+      const localModuleStub = sandbox.stub((localExporter as any).moduleExporter, 'exportModule').resolves();
+
+      await (localExporter as any).expandSchemaClosure();
+
+      expect(dependenciesHandlerStub.extractDependencies.called).to.be.false;
+      expect(localModuleStub.getCalls().filter((c) => c.args[0] === 'global-fields')).to.have.lengthOf(0);
+    });
+
+    it('should stop after maxCTReferenceDepth iterations', async () => {
+      mockConfig.maxCTReferenceDepth = 2;
+      const localExporter = new QueryExporter(mockManagementClient, mockConfig);
+      sandbox.stub((localExporter as any).moduleExporter, 'exportModule').resolves();
+
+      // Always report new GFs so the loop never naturally terminates.
+      let callN = 0;
+      dependenciesHandlerStub.extractDependencies.callsFake(() => {
+        callN++;
+        return Promise.resolve({
+          globalFields: new Set([`gf_${callN}`]),
+          extensions: new Set(),
+          taxonomies: new Set(),
+          marketplaceApps: new Set(),
+        });
+      });
+
+      await (localExporter as any).expandSchemaClosure();
+
+      expect(dependenciesHandlerStub.extractDependencies.callCount).to.be.at.most(2);
+    });
+
+    it('should propagate errors from extractReferencedContentTypes', async () => {
+      referencedHandlerStub.extractReferencedContentTypes.rejects(new Error('Handler failed'));
 
       try {
-        await (queryExporter as any).exportDependentModules();
+        await (queryExporter as any).expandSchemaClosure();
         expect.fail('Should have thrown error');
-      } catch (error) {
+      } catch (error: any) {
+        expect(error.message).to.equal('Handler failed');
+      }
+    });
+
+    it('should propagate errors from extractDependencies', async () => {
+      dependenciesHandlerStub.extractDependencies.rejects(new Error('Dependencies extraction failed'));
+
+      try {
+        await (queryExporter as any).expandSchemaClosure();
+        expect.fail('Should have thrown error');
+      } catch (error: any) {
         expect(error.message).to.equal('Dependencies extraction failed');
       }
     });
@@ -408,7 +509,7 @@ describe('QueryExporter', () => {
       await (queryExporter as any).exportContentModules();
 
       expect(setTimeoutStub.calledOnce).to.be.true;
-      expect(setTimeoutStub.calledWith(sinon.match.func, 10000)).to.be.true;
+      expect(setTimeoutStub.calledWith(sinon.match.func, 5000)).to.be.true;
     });
 
     it('should handle entries export errors', async () => {

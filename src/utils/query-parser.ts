@@ -37,6 +37,7 @@ export class QueryParser {
       return JSON.parse(queryString);
     } catch (error) {
       handleAndLogError(error, this.config.context, 'Invalid JSON query');
+      throw new CLIError('Invalid JSON query');
     }
   }
 

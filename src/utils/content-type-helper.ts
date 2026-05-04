@@ -47,12 +47,18 @@ export class ReferencedContentTypesHandler {
     const traverseSchema = (schemaArray: any[]) => {
       for (const field of schemaArray) {
         if (field.data_type === 'group' || field.data_type === 'global_field') {
-          // Recursively traverse group and global field schemas
-          traverseSchema(field.schema);
+          // Recursively traverse group and global field schemas.
+          // field.schema may be absent when a global_field is represented only by
+          // its reference_to UID (stub form in a content type's inline schema).
+          if (Array.isArray(field.schema) && field.schema.length > 0) {
+            traverseSchema(field.schema);
+          }
         } else if (field.data_type === 'blocks') {
           // Traverse each block's schema
           for (const blockKey in field.blocks) {
-            traverseSchema(field.blocks[blockKey].schema);
+            if (field.blocks[blockKey]?.schema) {
+              traverseSchema(field.blocks[blockKey].schema);
+            }
           }
         } else if (field.data_type === 'reference' && field.reference_to) {
           // Add reference field targets

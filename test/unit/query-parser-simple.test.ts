@@ -79,7 +79,7 @@ describe('Query Parser Simple Tests', () => {
         expect.fail('Expected validation error');
       } catch (error) {
         expect(error).to.be.instanceOf(CLIError);
-        expect(error.message).to.equal('Query must contain a "modules" object');
+        expect(error.message).to.equal('The query must contain a "modules" object.');
       }
     });
 
@@ -91,7 +91,7 @@ describe('Query Parser Simple Tests', () => {
         expect.fail('Expected validation error');
       } catch (error) {
         expect(error).to.be.instanceOf(CLIError);
-        expect(error.message).to.equal('Query must contain at least one module');
+        expect(error.message).to.equal('The query must contain at least one module.');
       }
     });
 
@@ -139,7 +139,7 @@ describe('Query Parser Simple Tests', () => {
         expect.fail('Expected validation error');
       } catch (error) {
         expect(error).to.be.instanceOf(CLIError);
-        expect(error.message).to.equal('Query must be a valid JSON object');
+        expect(error.message).to.equal('The query must be a valid JSON object.');
       }
     });
 
@@ -149,7 +149,7 @@ describe('Query Parser Simple Tests', () => {
         expect.fail('Expected validation error');
       } catch (error) {
         expect(error).to.be.instanceOf(CLIError);
-        expect(error.message).to.equal('Query must be a valid JSON object');
+        expect(error.message).to.equal('The query must be a valid JSON object.');
       }
     });
   });
