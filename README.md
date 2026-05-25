@@ -1,3 +1,7 @@
+> **This repository is archived.** Development continues in [cli-plugins](https://github.com/contentstack/cli-plugins) at [`packages/contentstack-query-export`](https://github.com/contentstack/cli-plugins/tree/main/packages/contentstack-query-export).  
+> Open issues on the standalone repo are no longer supported — use [cli-plugins/issues](https://github.com/contentstack/cli-plugins/issues).  
+> The npm package name is unchanged: **`@contentstack/cli-cm-export-query`**.
+
 # Contentstack CLI Query Export Plugin
 
 A powerful CLI plugin for Contentstack that enables query-based content export with intelligent dependency resolution and asset reference detection.
